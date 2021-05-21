@@ -1,0 +1,15 @@
+[package]
+name = "selene"
+description = "BGZ/TBI reader."
+version = "0.0.1"
+authors = ["Oliver Ruebenacker <oliverr@broadinstitute.org>"]
+edition = "2018"
+readme = "README.md"
+repository = "https://github.com/broadinstitute/selene"
+license = "BSD-3-Clause"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = "2.33.3"
+bgzip = "0.1.0"
