@@ -2,6 +2,7 @@ use std::fmt::{Display, Formatter};
 use std::{fmt, io, string};
 use clap::ErrorKind;
 use std::string::FromUtf8Error;
+use std::num::ParseIntError;
 
 pub struct SeleneError {
     message: String,
@@ -11,7 +12,22 @@ pub enum Error {
     Selene(SeleneError),
     Clap(clap::Error),
     IO(io::Error),
-    Utf8(string::FromUtf8Error)
+    Utf8(string::FromUtf8Error),
+    ParseInt(ParseIntError),
+}
+
+pub(crate) trait Reporter {
+    fn report(&self, error: Error);
+}
+
+pub(crate) fn handle_result<T>(result: Result<T, Error>) -> Option<T> {
+    match result {
+        Ok(value) => Some(value),
+        Err(error) => {
+            println!("Error: {}", error);
+            None
+        }
+    }
 }
 
 impl Error {
@@ -56,6 +72,10 @@ impl From<string::FromUtf8Error> for Error {
     fn from(utf8error: FromUtf8Error) -> Self { Error::Utf8(utf8error) }
 }
 
+impl From<ParseIntError> for Error {
+    fn from(parse_int_error: ParseIntError) -> Self { Error::ParseInt(parse_int_error) }
+}
+
 impl Display for SeleneError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         std::fmt::Display::fmt(&self.message, f)
@@ -69,6 +89,9 @@ impl Display for Error {
             Error::Clap(clap_error) => { std::fmt::Display::fmt(&clap_error, f) }
             Error::IO(io_error) => { fmt::Display::fmt(&io_error, f) }
             Error::Utf8(utf8error) => { fmt::Display::fmt(&utf8error, f) }
+            Error::ParseInt(parse_int_error) => {
+                fmt::Display::fmt(&parse_int_error, f)
+            }
         }
     }
 }
