@@ -2,32 +2,36 @@ mod util;
 mod config;
 mod input;
 mod variant;
+mod output;
+mod misses;
+mod join;
 
 use crate::util::error::Error;
-use std::fs;
+use std::fs::File;
 use bgzip::tabix::Tabix;
 use crate::input::Input;
+use bgzip::BGZFReader;
+use crate::output::Output;
+use crate::misses::MissesFile;
 
 pub fn run() -> Result<(), Error> {
     let config = config::get_config()?;
-    println!("data file: {}.", config.data_file);
-    println!("index file: {}.", config.index_file);
-    println!("input file: {}.", config.input_file);
-    let output_file = match config.output_file_opt {
-        Some(output_file) => output_file,
-        None => String::from("STDOUT")
-    };
-    println!("output file: {}.", output_file);
-    let tabix =
-        Tabix::from_reader(&mut fs::File::open(&config.index_file)?)?;
     let input = Input::from_file(&config.input_file)?;
-    for name_raw in tabix.names {
-        let name = String::from_utf8(name_raw)?;
+    let bgzf = BGZFReader::new(File::open(config.data_file)?);
+    let tabix =
+        Tabix::from_reader(&mut File::open(&config.index_file)?)?;
+    let output = match config.output_file_opt {
+        None => { Output::from_stdout() }
+        Some(output_file) => { Output::from_file(output_file)? }
+    };
+    let misses_file = match config.cache_misses_file_opt {
+        None => { MissesFile::from_stdout() }
+        Some(cache_misses_file) => { MissesFile::from_file(cache_misses_file)? }
+    };
+    for name_raw in &tabix.names {
+        let name = String::from_utf8(name_raw.clone())?;
         println!("Chromosome: {}", name)
     }
-    for variant in input.variants().take(10) {
-        println!("{}", variant.canonical_id());
-    }
-    // BGZFReader::bgzf_seek();
+    join::join_input_with_data(input, bgzf, tabix, output, misses_file)?;
     Ok(())
 }

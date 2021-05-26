@@ -10,7 +10,7 @@ pub(crate) struct Input {
 }
 
 impl Input {
-    pub(crate) fn from_file(file: &String) -> Result<Input, Error> {
+    pub(crate) fn from_file(file: &str) -> Result<Input, Error> {
         let inner: Box<dyn Read> = Box::new(File::open(file)?);
         let reader = BufReader::new(inner);
         Ok(Input { reader })
@@ -25,7 +25,7 @@ impl Input {
                 }
             }
         })
-            .filter(|line| { ! line.starts_with("#")})
+            .filter(|line| { ! line.starts_with('#')})
             .map(variant::parse_line)
             .filter_map(error::handle_result)
     }

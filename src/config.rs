@@ -5,18 +5,20 @@ pub(crate) struct Config {
     pub(crate) data_file: String,
     pub(crate) index_file: String,
     pub(crate) input_file: String,
+    pub(crate) cache_misses_file_opt: Option<String>,
     pub(crate) output_file_opt: Option<String>,
 }
 
 impl Config {
     fn new(data_file: String, index_file_opt: Option<String>, input_file: String,
-                  output_file_opt: Option<String>) -> Config {
+           cache_misses_file_opt: Option<String>, output_file_opt: Option<String>)
+           -> Config {
         let index_file =
             match index_file_opt {
-            Some(index_file) => index_file,
+                Some(index_file) => index_file,
                 None => data_file.clone() + ".tbi"
-        };
-        Config { data_file, index_file, input_file, output_file_opt }
+            };
+        Config { data_file, index_file, input_file, cache_misses_file_opt, output_file_opt }
     }
 }
 
@@ -25,6 +27,7 @@ mod names {
     pub(crate) const DATA_FILE: &str = "data-file";
     pub(crate) const INDEX_FILE: &str = "index-file";
     pub(crate) const INPUT_FILE: &str = "input-file";
+    pub(crate) const CACHE_MISSES_FILE: &str = "cache-misses-file";
     pub(crate) const OUTPUT_FILE: &str = "output-file";
 }
 
@@ -57,6 +60,12 @@ pub(crate) fn get_config() -> Result<Config, Error> {
                         .required(true)
                         .help("The input file")
                     )
+                    .arg(Arg::with_name(names::CACHE_MISSES_FILE)
+                        .short("c")
+                        .long("cache-misses-file")
+                        .takes_value(true)
+                        .help("The file to write cache misses.")
+                    )
                     .arg(Arg::with_name(names::OUTPUT_FILE)
                         .short("o")
                         .long("output-file")
@@ -74,9 +83,11 @@ pub(crate) fn get_config() -> Result<Config, Error> {
         let input_file =
             String::from(tabix_matches.value_of(names::INPUT_FILE)
                 .ok_or_else(|| Error::from("Missing argument --input-file."))?);
+        let cache_misses_file_opt =
+            tabix_matches.value_of(names::CACHE_MISSES_FILE).map(String::from);
         let output_file_opt =
             tabix_matches.value_of(names::OUTPUT_FILE).map(String::from);
-        Ok(Config::new(data_file, index_file_opt, input_file, output_file_opt))
+        Ok(Config::new(data_file, index_file_opt, input_file, cache_misses_file_opt, output_file_opt))
     } else {
         Err(Error::from("Need to specify sub-command."))
     }

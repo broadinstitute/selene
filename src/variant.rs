@@ -2,7 +2,7 @@ use crate::util::error::Error;
 use std::str::Split;
 
 pub(crate) struct Variant {
-    chrom: String,
+    pub(crate) chrom: String,
     pos: u32,
     ref_allele: String,
     alt_allele: String,
@@ -29,6 +29,6 @@ pub(crate) fn parse_line(line: String) -> Result<Variant, Error> {
 }
 
 fn get_field<'a, 'b>(fields: &'a mut Split<'b, char>, field_name: &str) -> Result<&'b str, Error> {
-    fields.next().ok_or(Error::from(format!("Missing {} field", field_name)))
+    fields.next().ok_or_else(|| Error::from(format!("Missing {} field", field_name)))
 }
 
