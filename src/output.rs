@@ -16,4 +16,8 @@ impl Output {
         let write: Box<dyn Write> = Box::new(std::io::stdout());
         Output { write }
     }
+    pub(crate) fn write_line(&mut self, line: String) -> Result<(), Error> {
+        self.write.write_all(line.as_bytes())?;
+        Ok(())
+    }
 }

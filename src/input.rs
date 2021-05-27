@@ -15,7 +15,7 @@ impl Input {
         let reader = BufReader::new(inner);
         Ok(Input { reader })
     }
-    pub(crate) fn variants<'a>(self) -> impl Iterator<Item=Variant> + 'a {
+    pub(crate) fn variants<'a>(self) -> impl Iterator<Item=(Variant, String)> + 'a {
         self.reader.lines().filter_map(|line_res|{
             match line_res {
                 Ok(line) => Some(line),
@@ -26,7 +26,7 @@ impl Input {
             }
         })
             .filter(|line| { ! line.starts_with('#')})
-            .map(variant::parse_line)
+            .map(variant::parse_vcf_line)
             .filter_map(error::handle_result)
     }
 }

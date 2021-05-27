@@ -5,6 +5,7 @@ mod variant;
 mod output;
 mod misses;
 mod join;
+mod tabix;
 
 use crate::util::error::Error;
 use std::fs::File;
@@ -25,13 +26,14 @@ pub fn run() -> Result<(), Error> {
         Some(output_file) => { Output::from_file(output_file)? }
     };
     let misses_file = match config.cache_misses_file_opt {
-        None => { MissesFile::from_stdout() }
+        None => { MissesFile::from_stdout()? }
         Some(cache_misses_file) => { MissesFile::from_file(cache_misses_file)? }
     };
     for name_raw in &tabix.names {
         let name = String::from_utf8(name_raw.clone())?;
         println!("Chromosome: {}", name)
     }
-    join::join_input_with_data(input, bgzf, tabix, output, misses_file)?;
+    join::join_input_with_data(input, bgzf, tabix, output, misses_file, config.i_col_ref,
+                               config.i_col_alt)?;
     Ok(())
 }

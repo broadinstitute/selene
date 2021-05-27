@@ -7,18 +7,29 @@ pub(crate) struct Config {
     pub(crate) input_file: String,
     pub(crate) cache_misses_file_opt: Option<String>,
     pub(crate) output_file_opt: Option<String>,
+    pub(crate) i_col_ref: usize,
+    pub(crate) i_col_alt: usize,
 }
 
 impl Config {
     fn new(data_file: String, index_file_opt: Option<String>, input_file: String,
-           cache_misses_file_opt: Option<String>, output_file_opt: Option<String>)
+           cache_misses_file_opt: Option<String>, output_file_opt: Option<String>,
+           i_col_ref: usize, i_col_alt: usize)
            -> Config {
         let index_file =
             match index_file_opt {
                 Some(index_file) => index_file,
                 None => data_file.clone() + ".tbi"
             };
-        Config { data_file, index_file, input_file, cache_misses_file_opt, output_file_opt }
+        Config {
+            data_file,
+            index_file,
+            input_file,
+            cache_misses_file_opt,
+            output_file_opt,
+            i_col_ref,
+            i_col_alt,
+        }
     }
 }
 
@@ -29,6 +40,8 @@ mod names {
     pub(crate) const INPUT_FILE: &str = "input-file";
     pub(crate) const CACHE_MISSES_FILE: &str = "cache-misses-file";
     pub(crate) const OUTPUT_FILE: &str = "output-file";
+    pub(crate) const I_COL_REF: &str = "i-col-ref";
+    pub(crate) const I_COL_ALT: &str = "i-col-alt";
 }
 
 pub(crate) fn get_config() -> Result<Config, Error> {
@@ -72,6 +85,18 @@ pub(crate) fn get_config() -> Result<Config, Error> {
                         .takes_value(true)
                         .help("The output file")
                     )
+                    .arg(Arg::with_name(names::I_COL_REF)
+                        .short("r")
+                        .long("i-col-ref")
+                        .takes_value(true)
+                        .help("The column in data file containing the ref allele")
+                    )
+                    .arg(Arg::with_name(names::I_COL_ALT)
+                        .short("a")
+                        .long("i-col-alt")
+                        .takes_value(true)
+                        .help("The column in data file containing the alt allele")
+                    )
             );
     let matches = app.get_matches_safe()?;
     if let Some(tabix_matches) = matches.subcommand_matches(names::TABIX) {
@@ -87,7 +112,14 @@ pub(crate) fn get_config() -> Result<Config, Error> {
             tabix_matches.value_of(names::CACHE_MISSES_FILE).map(String::from);
         let output_file_opt =
             tabix_matches.value_of(names::OUTPUT_FILE).map(String::from);
-        Ok(Config::new(data_file, index_file_opt, input_file, cache_misses_file_opt, output_file_opt))
+        let i_col_ref =
+            str::parse::<usize>(tabix_matches.value_of(names::I_COL_REF)
+                .ok_or_else(|| Error::from("Missing argument --i-col-ref"))?)?;
+        let i_col_alt =
+            str::parse::<usize>(tabix_matches.value_of(names::I_COL_ALT)
+                .ok_or_else(|| Error::from("Missing argument --i-col-alt"))?)?;
+        Ok(Config::new(data_file, index_file_opt, input_file, cache_misses_file_opt,
+                       output_file_opt, i_col_ref, i_col_alt))
     } else {
         Err(Error::from("Need to specify sub-command."))
     }
