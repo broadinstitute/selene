@@ -18,9 +18,9 @@ impl SequenceMeta {
     fn new() -> SequenceMeta {
         SequenceMeta { name: String::from(""), i_opt: None }
     }
-    fn update_from(&mut self, name: &String, names: &Vec<Vec<u8>>) {
+    fn update_from(&mut self, name: &str, names: &[Vec<u8>]) {
         if self.name.ne(name) {
-            self.name = name.clone();
+            self.name = name.to_string();
             self.i_opt = names.iter().position(|name_i| name.as_bytes() == name_i);
         }
     }
@@ -63,7 +63,7 @@ i_col_ref: usize, i_col_alt: usize)
                                         Some(chunk.begin)
                                     }
                                 }).collect();
-                        vposes.sort();
+                        vposes.sort_unstable();
                         vposes.dedup();
                         let mut found_variant = false;
                         for vpos in vposes {

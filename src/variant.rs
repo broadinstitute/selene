@@ -61,7 +61,7 @@ pub(crate) fn parse_tsv_line(line: String, i_cols: &ICols) -> Result<(Variant, S
     Ok((Variant::new(chrom, pos, ref_allele, alt_allele), line))
 }
 
-fn get_tsv_field<'a, 'b>(fields: &'a Vec<&'b str>, i_col: usize) -> Result<&'b str, Error> {
+fn get_tsv_field<'b>(fields: &[&'b str], i_col: usize) -> Result<&'b str, Error> {
     let field =
         *fields.get(i_col)
             .ok_or_else(|| Error::from(format!("Missing field {}.", i_col)))?;
