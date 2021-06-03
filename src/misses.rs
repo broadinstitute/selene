@@ -15,7 +15,7 @@ impl MissesFile {
     }
     pub(crate) fn from_file(out_file: String) -> Result<MissesFile, Error> {
         let mut write: LineWriter<Box<dyn Write>> =
-            LineWriter::new(Box::new(File::open(out_file)?));
+            LineWriter::new(Box::new(File::create(out_file)?));
         MissesFile::write_header(&mut write)?;
         Ok(MissesFile { write })
     }

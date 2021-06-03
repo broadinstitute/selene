@@ -8,6 +8,7 @@ use crate::misses::MissesFile;
 use crate::variant::ICols;
 use crate::variant;
 use crate::tabix;
+use crate::tsv::IAlleleCols;
 
 struct SequenceMeta {
     name: String,
@@ -28,13 +29,14 @@ impl SequenceMeta {
 
 pub(crate) fn join_input_with_data<R>(input: Input, mut bgzf: BGZFReader<R>, tabix: Tabix,
                                       mut output: Output, mut misses_file: MissesFile,
-i_col_ref: usize, i_col_alt: usize)
+                                      i_allele_cols: IAlleleCols)
                                       -> Result<(), Error>
     where R: Read + Seek {
     let mut meta = SequenceMeta::new();
     let i_cols =
         ICols::new(tabix.column_for_sequence as usize,
-                   tabix.column_for_begin as usize, i_col_ref, i_col_alt);
+                   tabix.column_for_begin as usize,
+                   i_allele_cols.i_col_ref, i_allele_cols.i_col_alt);
     for (variant, _) in input.variants() {
         meta.update_from(&variant.chrom, &tabix.names);
         match meta.i_opt {
@@ -54,7 +56,7 @@ i_col_ref: usize, i_col_alt: usize)
                         let mut vposes: Vec<u64> =
                             bins.iter().flat_map(|k| sequence.bins.get(k))
                                 .flat_map(|tabix_bin| { &tabix_bin.chunks })
-                                .filter_map(|chunk|{
+                                .filter_map(|chunk| {
                                     if chunk.end <= *vpos_interval {
                                         None
                                     } else if chunk.begin <= *vpos_interval {
