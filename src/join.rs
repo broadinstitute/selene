@@ -15,14 +15,20 @@ struct SequenceMeta {
     i_opt: Option<usize>,
 }
 
+
 impl SequenceMeta {
     fn new() -> SequenceMeta {
         SequenceMeta { name: String::from(""), i_opt: None }
     }
     fn update_from(&mut self, name: &str, names: &[Vec<u8>]) {
-        if self.name.ne(name) {
+        if self.name != name {
             self.name = name.to_string();
-            self.i_opt = names.iter().position(|name_i| name.as_bytes() == name_i);
+            self.i_opt = names.iter().position(|name_i_bytes| {
+                let name_i_raw = String::from_utf8(name_i_bytes.clone())
+                    .unwrap_or(String::from(""));
+                let name_i = name_i_raw.trim_matches(char::from(0));
+                name == name_i
+            });
         }
     }
 }
@@ -34,8 +40,8 @@ pub(crate) fn join_input_with_data<R>(input: Input, mut bgzf: BGZFReader<R>, tab
     where R: Read + Seek {
     let mut meta = SequenceMeta::new();
     let i_cols =
-        ICols::new(tabix.column_for_sequence as usize,
-                   tabix.column_for_begin as usize,
+        ICols::new((tabix.column_for_sequence - 1) as usize,
+                   (tabix.column_for_begin - 1) as usize,
                    i_allele_cols.i_col_ref, i_allele_cols.i_col_alt);
     for (variant, _) in input.variants() {
         meta.update_from(&variant.chrom, &tabix.names);
@@ -81,6 +87,9 @@ pub(crate) fn join_input_with_data<R>(input: Input, mut bgzf: BGZFReader<R>, tab
                                 if variant == data_variant {
                                     found_variant = true;
                                     output.write_line(line)?;
+                                } else if (variant.chrom != data_variant.chrom) ||
+                                    (variant.pos < data_variant.pos) {
+                                    break;
                                 }
                             }
                         }

@@ -52,7 +52,7 @@ fn get_vcf_field<'a, 'b>(fields: &'a mut Split<'b, char>, field_name: &str)
 pub(crate) fn parse_tsv_line(line: String, i_cols: &ICols) -> Result<(Variant, String), Error> {
     let i_max =
         cmp::max(cmp::max(i_cols.i_col_chrom, i_cols.i_col_pos),
-                 cmp::max(i_cols.i_col_ref, i_cols.i_col_alt));
+                 cmp::max(i_cols.i_col_ref, i_cols.i_col_alt)) + 1;
     let fields: Vec<&str> = line.split('\t').take(i_max).collect();
     let chrom = String::from(get_tsv_field(&fields, i_cols.i_col_chrom)?);
     let pos = str::parse::<u32>(get_tsv_field(&fields, i_cols.i_col_pos)?)?;
@@ -67,3 +67,4 @@ fn get_tsv_field<'b>(fields: &[&'b str], i_col: usize) -> Result<&'b str, Error>
             .ok_or_else(|| Error::from(format!("Missing field {}.", i_col)))?;
     Ok(field)
 }
+
