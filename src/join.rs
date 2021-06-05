@@ -25,7 +25,7 @@ impl SequenceMeta {
             self.name = name.to_string();
             self.i_opt = names.iter().position(|name_i_bytes| {
                 let name_i_raw = String::from_utf8(name_i_bytes.clone())
-                    .unwrap_or(String::from(""));
+                    .unwrap_or_else(|_| String::from(""));
                 let name_i = name_i_raw.trim_matches(char::from(0));
                 name == name_i
             });

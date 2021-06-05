@@ -40,6 +40,16 @@ impl Error {
             false
         }
     }
+    pub fn error_code(&self) -> i32 {
+        match self {
+            Error::Selene(_) => { 1 }
+            Error::Clap(_) => { 2 }
+            Error::IO(_) => { 3 }
+            Error::Utf8(_) => { 4 }
+            Error::ParseInt(_) => { 5 }
+            Error::Bgzf(_) => { 6 }
+        }
+    }
 }
 
 impl From<String> for SeleneError {
