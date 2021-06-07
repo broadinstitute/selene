@@ -7,6 +7,7 @@ mod misses;
 mod join;
 mod tabix;
 mod tsv;
+mod meta_lines;
 
 use crate::util::error::Error;
 use std::fs::File;
@@ -23,14 +24,23 @@ pub fn run() -> Result<(), Error> {
     let mut bgzf = BGZFReader::new(File::open(config.data_file)?);
     let tabix =
         Tabix::from_reader(&mut File::open(&config.index_file)?)?;
+    let chroms: Vec<String> = tabix.names.iter().filter_map(|raw| {
+       String::from_utf8(raw.clone()).ok()
+    }).collect();
+    let chroms_line = meta_lines::chromosome_line(chroms.as_slice());
+    let meta_lines = vec!(chroms_line);
     let header_line = tsv::get_header_line(&mut bgzf)?;
     let output = match config.output_file_opt {
-        None => { Output::from_stdout(&header_line)? }
-        Some(output_file) => { Output::from_file(&header_line, output_file)? }
+        None => { Output::from_stdout(&header_line, &meta_lines)? }
+        Some(output_file) => {
+            Output::from_file(output_file, &header_line, &meta_lines)?
+        }
     };
     let misses_file = match config.cache_misses_file_opt {
-        None => { MissesFile::from_stdout()? }
-        Some(cache_misses_file) => { MissesFile::from_file(cache_misses_file)? }
+        None => { MissesFile::from_stdout(&meta_lines)? }
+        Some(cache_misses_file) => {
+            MissesFile::from_file(cache_misses_file, &meta_lines)?
+        }
     };
     for name_raw in &tabix.names {
         let name = String::from_utf8(name_raw.clone())?;
