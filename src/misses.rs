@@ -1,29 +1,29 @@
-use std::io::{Write, LineWriter};
+use std::io::{Write, BufWriter};
 use crate::util::error::Error;
 use std::fs::File;
 use crate::variant::Variant;
 use crate::meta_lines;
 
 pub(crate) struct MissesFile {
-    write: LineWriter<Box<dyn Write>>,
+    write: BufWriter<Box<dyn Write>>,
 }
 
 impl MissesFile {
-    fn write_header(write: &mut LineWriter<Box<dyn Write>>) -> Result<(), Error> {
+    fn write_header(write: &mut BufWriter<Box<dyn Write>>) -> Result<(), Error> {
         let header = "#CHROM\tPOS\tID\tREF\tALT\n";
         write.write_all(header.as_bytes())?;
         Ok(())
     }
     pub(crate) fn from_file(out_file: String, meta_lines: &[String]) -> Result<MissesFile, Error> {
-        let mut write: LineWriter<Box<dyn Write>> =
-            LineWriter::new(Box::new(File::create(out_file)?));
+        let mut write: BufWriter<Box<dyn Write>> =
+            BufWriter::new(Box::new(File::create(out_file)?));
         meta_lines::write_meta_lines(&mut write, &meta_lines)?;
         MissesFile::write_header(&mut write)?;
         Ok(MissesFile { write })
     }
     pub(crate) fn from_stdout(meta_lines: &[String]) -> Result<MissesFile, Error> {
-        let mut write: LineWriter<Box<dyn Write>> =
-            LineWriter::new(Box::new(std::io::stdout()));
+        let mut write: BufWriter<Box<dyn Write>> =
+            BufWriter::new(Box::new(std::io::stdout()));
         meta_lines::write_meta_lines(&mut write, &meta_lines)?;
         MissesFile::write_header(&mut write)?;
         Ok(MissesFile { write })
