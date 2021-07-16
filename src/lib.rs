@@ -8,6 +8,7 @@ mod join;
 mod tabix;
 mod tsv;
 mod meta_lines;
+mod regions;
 
 use crate::util::error::Error;
 use std::fs::File;
