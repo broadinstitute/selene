@@ -2,33 +2,46 @@ use crate::util::error::Error;
 use clap::{App, SubCommand, Arg};
 
 pub(crate) struct Config {
+    pub(crate) input_config: InputConfig,
+    pub(crate) cache_misses_file_opt: Option<String>,
+    pub(crate) output_file_opt: Option<String>,
+}
+
+pub(crate) struct InputConfig {
     pub(crate) data_file: String,
     pub(crate) index_file: String,
     pub(crate) input_file: String,
     pub(crate) regions_file_opt: Option<String>,
-    pub(crate) cache_misses_file_opt: Option<String>,
-    pub(crate) output_file_opt: Option<String>,
     pub(crate) col_ref: String,
     pub(crate) col_alt: String,
 }
 
 impl Config {
-    fn new(data_file: String, index_file_opt: Option<String>, input_file: String,
-           regions_file_opt: Option<String>, cache_misses_file_opt: Option<String>,
-           output_file_opt: Option<String>, col_ref: String, col_alt: String)
+    fn new(input_config: InputConfig, cache_misses_file_opt: Option<String>,
+           output_file_opt: Option<String>)
            -> Config {
+        Config {
+            input_config,
+            cache_misses_file_opt,
+            output_file_opt,
+        }
+    }
+}
+
+impl InputConfig {
+    pub(crate) fn new(data_file: String, index_file_opt: Option<String>, input_file: String,
+                      regions_file_opt: Option<String>, col_ref: String, col_alt: String)
+        -> InputConfig {
         let index_file =
             match index_file_opt {
                 Some(index_file) => index_file,
                 None => data_file.clone() + ".tbi"
             };
-        Config {
+        InputConfig {
             data_file,
             index_file,
             input_file,
             regions_file_opt,
-            cache_misses_file_opt,
-            output_file_opt,
             col_ref,
             col_alt,
         }
@@ -77,7 +90,7 @@ pub(crate) fn get_config() -> Result<Config, Error> {
                         .help("The input file")
                     )
                     .arg(Arg::with_name(names::REGIONS_FILE)
-                        .short("r")
+                        .short("g")
                         .long("regions-file")
                         .takes_value(true)
                         .required(false)
@@ -130,8 +143,10 @@ pub(crate) fn get_config() -> Result<Config, Error> {
         let col_alt =
             String::from(tabix_matches.value_of(names::COL_ALT)
                 .ok_or_else(|| Error::from("Missing argument --col-alt."))?);
-        Ok(Config::new(data_file, index_file_opt, input_file, regions_file_opt,
-                       cache_misses_file_opt, output_file_opt, col_ref, col_alt))
+        let input_config =
+            InputConfig::new(data_file, index_file_opt, input_file, regions_file_opt, col_ref,
+                             col_alt);
+        Ok(Config::new(input_config, cache_misses_file_opt, output_file_opt))
     } else {
         Err(Error::from("Need to specify sub-command."))
     }

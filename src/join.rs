@@ -5,10 +5,11 @@ use crate::input::Input;
 use bgzip::tabix::Tabix;
 use crate::output::Output;
 use crate::misses::MissesFile;
-use crate::variant::ICols;
+use crate::variant::{ICols, Variant};
 use crate::variant;
 use crate::tabix;
 use crate::tsv::IAlleleCols;
+use crate::regions::Regions;
 
 struct SequenceMeta {
     name: String,
@@ -34,8 +35,8 @@ impl SequenceMeta {
 }
 
 pub(crate) fn join_input_with_data<R>(input: Input, mut bgzf: BGZFReader<R>, tabix: Tabix,
-                                      mut output: Output, mut misses_file: MissesFile,
-                                      i_allele_cols: IAlleleCols)
+                                      regions_opt: Option<Regions>, mut output: Output,
+                                      mut misses_file: MissesFile, i_allele_cols: IAlleleCols)
                                       -> Result<(), Error>
     where R: Read + Seek {
     let mut meta = SequenceMeta::new();
@@ -43,7 +44,17 @@ pub(crate) fn join_input_with_data<R>(input: Input, mut bgzf: BGZFReader<R>, tab
         ICols::new((tabix.column_for_sequence - 1) as usize,
                    (tabix.column_for_begin - 1) as usize,
                    i_allele_cols.i_col_ref, i_allele_cols.i_col_alt);
-    for (variant, _) in input.variants() {
+    let pred_opt = regions_opt.map(|regions| {
+        move |(variant, _): &(Variant, String)| { regions.overlap(variant) }
+    });
+    let variants = match pred_opt {
+        None => { Box::new(input.variants()) as Box<dyn Iterator<Item=(Variant, String)>> }
+        Some(pred) => {
+            Box::new(input.variants().filter(pred))
+                as Box<dyn Iterator<Item=(Variant, String)>>
+        }
+    };
+    for (variant, _) in variants {
         meta.update_from(&variant.chrom, &tabix.names);
         match meta.i_opt {
             None => {

@@ -34,9 +34,9 @@ checksum = "cdb031dd78e28731d87d56cc8ffef4a8f36ca26c38fe2de700543e627f8a464a"
 
 [[package]]
 name = "bgzip"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9ae453df22890e3de98874f7bb6adb9eedd871a026eb9ffbaf70b85ef88e6dd8"
+checksum = "b24c7834de214cf8da3054a155602eb727eba3bb4bbd07f3114f337421c15acf"
 dependencies = [
  "flate2",
  "thiserror",
@@ -135,7 +135,7 @@ dependencies = [
 
 [[package]]
 name = "selene"
-version = "1.1.1"
+version = "1.2.0"
 dependencies = [
  "bgzip",
  "clap",

@@ -18,19 +18,26 @@ use bgzip::BGZFReader;
 use crate::output::Output;
 use crate::misses::MissesFile;
 use crate::tsv::IAlleleCols;
+use crate::regions::Regions;
 
 pub fn run() -> Result<(), Error> {
     let config = config::get_config()?;
-    let input = Input::from_file(&config.input_file)?;
-    let mut bgzf = BGZFReader::new(File::open(config.data_file)?);
+    let input_config = &config.input_config;
+    let input = Input::from_file(&input_config.input_file)?;
+    let mut bgzf =
+        BGZFReader::new(File::open(&input_config.data_file)?);
     let tabix =
-        Tabix::from_reader(&mut File::open(&config.index_file)?)?;
+        Tabix::from_reader(&mut File::open(&input_config.index_file)?)?;
     let chroms: Vec<String> = tabix.names.iter().filter_map(|raw| {
        String::from_utf8(raw.clone()).ok()
     }).collect();
     let chroms_line = meta_lines::chromosome_line(chroms.as_slice());
     let meta_lines = vec!(chroms_line);
     let header_line = tsv::get_header_line(&mut bgzf)?;
+    let regions_opt = match &input_config.regions_file_opt {
+        None => { None }
+        Some(regions_file) => { Some(Regions::load(regions_file)?) }
+    };
     let output = match config.output_file_opt {
         None => { Output::from_stdout(&header_line, &meta_lines)? }
         Some(output_file) => {
@@ -48,7 +55,8 @@ pub fn run() -> Result<(), Error> {
         println!("Chromosome: {}", name)
     }
     let i_allele_cols =
-        IAlleleCols::parse(&header_line, &config.col_ref, &config.col_alt)?;
-    join::join_input_with_data(input, bgzf, tabix, output, misses_file, i_allele_cols)?;
+        IAlleleCols::parse(&header_line, &input_config.col_ref, &input_config.col_alt)?;
+    join::join_input_with_data(input, bgzf, tabix, regions_opt, output, misses_file,
+                               i_allele_cols)?;
     Ok(())
 }
