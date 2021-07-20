@@ -5,6 +5,7 @@ pub(crate) struct Config {
     pub(crate) data_file: String,
     pub(crate) index_file: String,
     pub(crate) input_file: String,
+    pub(crate) regions_file_opt: Option<String>,
     pub(crate) cache_misses_file_opt: Option<String>,
     pub(crate) output_file_opt: Option<String>,
     pub(crate) col_ref: String,
@@ -13,8 +14,8 @@ pub(crate) struct Config {
 
 impl Config {
     fn new(data_file: String, index_file_opt: Option<String>, input_file: String,
-           cache_misses_file_opt: Option<String>, output_file_opt: Option<String>,
-           col_ref: String, col_alt: String)
+           regions_file_opt: Option<String>, cache_misses_file_opt: Option<String>,
+           output_file_opt: Option<String>, col_ref: String, col_alt: String)
            -> Config {
         let index_file =
             match index_file_opt {
@@ -25,6 +26,7 @@ impl Config {
             data_file,
             index_file,
             input_file,
+            regions_file_opt,
             cache_misses_file_opt,
             output_file_opt,
             col_ref,
@@ -38,6 +40,7 @@ mod names {
     pub(crate) const DATA_FILE: &str = "data-file";
     pub(crate) const INDEX_FILE: &str = "index-file";
     pub(crate) const INPUT_FILE: &str = "input-file";
+    pub(crate) const REGIONS_FILE: &str = "regions-file";
     pub(crate) const CACHE_MISSES_FILE: &str = "cache-misses-file";
     pub(crate) const OUTPUT_FILE: &str = "output-file";
     pub(crate) const COL_REF: &str = "col-ref";
@@ -72,6 +75,13 @@ pub(crate) fn get_config() -> Result<Config, Error> {
                         .takes_value(true)
                         .required(true)
                         .help("The input file")
+                    )
+                    .arg(Arg::with_name(names::REGIONS_FILE)
+                        .short("r")
+                        .long("regions-file")
+                        .takes_value(true)
+                        .required(false)
+                        .help("Optional file with regions. If provided, only variants within regions will be considered.")
                     )
                     .arg(Arg::with_name(names::CACHE_MISSES_FILE)
                         .short("c")
@@ -108,6 +118,8 @@ pub(crate) fn get_config() -> Result<Config, Error> {
         let input_file =
             String::from(tabix_matches.value_of(names::INPUT_FILE)
                 .ok_or_else(|| Error::from("Missing argument --input-file."))?);
+        let regions_file_opt =
+            tabix_matches.value_of(names::REGIONS_FILE).map(String::from);
         let cache_misses_file_opt =
             tabix_matches.value_of(names::CACHE_MISSES_FILE).map(String::from);
         let output_file_opt =
@@ -118,8 +130,8 @@ pub(crate) fn get_config() -> Result<Config, Error> {
         let col_alt =
             String::from(tabix_matches.value_of(names::COL_ALT)
                 .ok_or_else(|| Error::from("Missing argument --col-alt."))?);
-        Ok(Config::new(data_file, index_file_opt, input_file, cache_misses_file_opt,
-                       output_file_opt, col_ref, col_alt))
+        Ok(Config::new(data_file, index_file_opt, input_file, regions_file_opt,
+                       cache_misses_file_opt, output_file_opt, col_ref, col_alt))
     } else {
         Err(Error::from("Need to specify sub-command."))
     }
