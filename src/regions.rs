@@ -131,9 +131,13 @@ fn overlaps_intervals(interval: &Interval, intervals: &[Interval]) -> bool {
                 let i_mid = (i_min + i_max) / 2;
                 let interval_i_mid = intervals[i_mid];
                 if interval_i_mid.end <= interval.begin {
-                    i_max = i_mid - 1;
-                } else if interval_i_mid.begin >= interval.end {
                     i_min = i_mid + 1;
+                } else if interval_i_mid.begin >= interval.end {
+                    if i_mid > 0 {
+                        i_max = i_mid - 1;
+                    } else {
+                        break false;
+                    }
                 } else {
                     break true;
                 }
@@ -144,3 +148,83 @@ fn overlaps_intervals(interval: &Interval, intervals: &[Interval]) -> bool {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::util::error::Error;
+    use crate::regions::Regions;
+    use crate::variant::Variant;
+    use std::io::{BufWriter, Write};
+    use std::fs::File;
+
+    fn write_regions_line(writer: &mut BufWriter<File>, id: &str, chrom: &str, begin: u32,
+                          end: u32) -> Result<(), Error> {
+        let line = format!("{}\t{}\t{}\t{}\n", id, chrom, begin, end);
+        writer.write(line.as_bytes())?;
+        Ok(())
+    }
+
+    fn write_regions_file(path: &str) -> Result<(), Error> {
+        let mut writer = BufWriter::new(File::create(path)?);
+        write_regions_line(&mut writer, "region1", "1", 100, 200)?;
+        write_regions_line(&mut writer, "region2", "2", 100, 200)?;
+        write_regions_line(&mut writer, "region3", "2", 200, 300)?;
+        write_regions_line(&mut writer, "region4", "3", 100, 200)?;
+        write_regions_line(&mut writer, "region5", "3", 300, 400)?;
+        writer.flush()?;
+        Ok(())
+    }
+
+    fn assert_included(regions: &Regions, variant: &Variant) {
+        assert!(regions.overlap(variant), "Regions should include variant {}, but don't.", variant)
+    }
+
+    fn assert_not_included(regions: &Regions, variant: &Variant) {
+        assert!(!regions.overlap(variant), "Regions shouldn't include variant {}, but do.",
+                variant)
+    }
+
+    fn new_variant(chrom: &str, pos: u32, ref_allele: &str, alt_allele: &str) -> Variant {
+        Variant::new(chrom.to_string(), pos, ref_allele.to_string(),
+                     alt_allele.to_string())
+    }
+
+    #[test]
+    fn load_and_test_regions() -> Result<(), Error> {
+        let regions_file_path = "tmp/regions.tsv";
+        write_regions_file(&regions_file_path)?;
+        let regions = Regions::load(regions_file_path)?;
+        assert_eq!(regions.by_chrom.len(), 3);
+        assert_eq!(regions.by_chrom.get("1").unwrap().len(), 1);
+        assert_eq!(regions.by_chrom.get("2").unwrap().len(), 1);
+        assert_eq!(regions.by_chrom.get("3").unwrap().len(), 2);
+        assert_not_included(&regions,
+                            &new_variant("1", 50, "A", "T"));
+        assert_included(&regions,
+                        &new_variant("1", 150, "A", "T"));
+        assert_not_included(&regions,
+                            &new_variant("1", 250, "A", "T"));
+        assert_not_included(&regions,
+                            &new_variant("2", 50, "A", "T"));
+        assert_included(&regions,
+                        &new_variant("2", 150, "A", "T"));
+        assert_included(&regions,
+                        &new_variant("2", 250, "A", "T"));
+        assert_not_included(&regions,
+                            &new_variant("2", 350, "A", "T"));
+        assert_not_included(&regions,
+                            &new_variant("3", 50, "A", "T"));
+        assert_included(&regions,
+                        &new_variant("3", 150, "A", "T"));
+        assert_not_included(&regions,
+                            &new_variant("3", 250, "A", "T"));
+        assert_included(&regions,
+                        &new_variant("3", 350, "A", "T"));
+        assert_not_included(&regions,
+                            &new_variant("3", 450, "A", "T"));
+        assert_not_included(&regions,
+                            &new_variant("X", 50, "A", "T"));
+        Ok(())
+    }
+}
+

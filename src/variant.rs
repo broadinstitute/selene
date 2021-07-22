@@ -1,6 +1,7 @@
 use crate::util::error::Error;
 use std::str::Split;
 use std::cmp;
+use std::fmt::{Display, Formatter};
 
 pub(crate) type Pos = u32;
 
@@ -68,3 +69,8 @@ fn get_tsv_field<'b>(fields: &[&'b str], i_col: usize) -> Result<&'b str, Error>
     Ok(field)
 }
 
+impl Display for Variant {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}:{}_{}/{}", self.chrom, self.pos, self.ref_allele, self.alt_allele)
+    }
+}

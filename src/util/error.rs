@@ -1,4 +1,4 @@
-use std::fmt::{Display, Formatter};
+use std::fmt::{Display, Formatter, Debug};
 use std::{fmt, io, string};
 use clap::ErrorKind;
 use std::string::FromUtf8Error;
@@ -110,5 +110,11 @@ impl Display for Error {
             }
             Error::Bgzf(bgzf_error) => { fmt::Display::fmt(&bgzf_error, f) }
         }
+    }
+}
+
+impl Debug for Error {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        Display::fmt(self, f)
     }
 }
