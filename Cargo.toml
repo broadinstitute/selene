@@ -13,3 +13,4 @@ license = "BSD-3-Clause"
 [dependencies]
 clap = "2.33.3"
 bgzip = "0.2.1"
+nom = "6.2.1"

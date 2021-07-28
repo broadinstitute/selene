@@ -9,6 +9,10 @@ mod tabix;
 mod tsv;
 mod meta_lines;
 mod regions;
+mod mion;
+
+#[macro_use]
+extern crate nom;
 
 use crate::util::error::Error;
 use std::fs::File;

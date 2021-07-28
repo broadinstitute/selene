@@ -1,0 +1,4 @@
+chroms = split_by_chrom(input_file);
+chrom <- chroms {
+    tabix(chrom);
+}
