@@ -13,7 +13,7 @@ pub(crate) enum Expression {
     Literal(Literal),
     Binary(Box<Expression>, BinOp, Box<Expression>),
     Member(Box<Expression>, Identifier),
-    Call(Identifier, Vec<Expression>)
+    Call(Box<Expression>, Vec<Expression>)
 }
 
 impl Expression {
