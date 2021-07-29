@@ -7,13 +7,10 @@ use nom::sequence::pair;
 use nom::branch::alt;
 use nom::character::complete::{alpha1, alphanumeric1, one_of};
 use nom::multi::{many0, many1};
-use nom::bytes::complete::{tag, take_while1};
+use nom::bytes::complete::tag;
 use crate::mion::string;
 use nom::number::complete::double;
 use nom::Parser;
-use nom::character::is_digit;
-
-type ParseResult<'a, O> = IResult<&'a str, O, VerboseError<&'a str>>;
 
 pub(crate) trait MParser<'a, O>: Parser<&'a str, O, VerboseError<&'a str>> {}
 
@@ -27,11 +24,11 @@ pub(crate) fn identifier<'a>() -> impl MParser<'a, Expression> {
                 alt((alpha1, tag("_"))),
                 many0(alt((alphanumeric1, tag("_")))),
             )
-        )).map(|name| Expression::new_identifier(name))
+        )).map(Expression::new_identifier)
 }
 
 pub(crate) fn string_literal<'a>() -> impl MParser<'a, Literal> {
-    context("string literal", string::parse_string).map(|string| Literal::String(string))
+    context("string literal", string::parse_string).map(Literal::String)
 }
 
 pub(crate) fn float_literal<'a>() -> impl MParser<'a, Literal> {
@@ -45,8 +42,11 @@ pub(crate) fn integer_literal<'a>() -> impl MParser<'a, Literal> {
         .map(|i| { Literal::Int(i) })
 }
 
-pub(crate) fn integer<'a>()  -> impl MParser<'a, Literal> {
+pub(crate) fn literal<'a>() -> impl MParser<'a, Literal> {
     alt((string_literal(), float_literal(), integer_literal()))
 }
+
+
+
 
 

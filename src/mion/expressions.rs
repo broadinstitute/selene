@@ -1,5 +1,4 @@
 use super::ops::BinOp;
-use crate::mion::expressions::Expression::Identifier;
 
 struct Block {
     statements: Vec<Statement>,
@@ -10,15 +9,25 @@ struct Statement {
 }
 
 pub(crate) enum Expression {
-    Identifier(String),
+    Identifier(Identifier),
     Literal(Literal),
-    Binary(Box<Expression>, BinOp, Box<Expression>)
+    Binary(Box<Expression>, BinOp, Box<Expression>),
+    Member(Box<Expression>, Identifier),
+    Call(Identifier, Vec<Expression>)
 }
 
 impl Expression {
     pub(crate) fn new_identifier(id_str: &str) -> Expression {
-        Identifier(id_str.to_string())
+        Expression::Identifier(Identifier::new(id_str.to_string()))
     }
+}
+
+pub(crate) struct Identifier {
+    name: String
+}
+
+impl Identifier {
+    pub(crate) fn new(name: String) -> Identifier { Identifier { name} }
 }
 
 pub(crate) enum Literal {
