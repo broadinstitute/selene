@@ -1,4 +1,5 @@
 use std::fmt::{Display, Formatter};
+use crate::Error;
 
 pub(crate) mod symbols {
     pub(crate) const DOT: &str = ".";
@@ -23,7 +24,6 @@ pub(crate) mod symbols {
     pub(crate) const CLOSE_PARENS: &str = ")";
     pub(crate) const OPEN_BRACKETS: &str = "{";
     pub(crate) const CLOSE_BRACKETS: &str = "}";
-
 }
 
 pub(crate) enum BinOp {
@@ -102,6 +102,32 @@ impl BinOp {
             BinOp::Assign => { BinOpGroup::Assign }
             BinOp::Comma => { BinOpGroup::Punctuation }
             BinOp::Semicolon => { BinOpGroup::Punctuation }
+        }
+    }
+    pub(crate) fn from_symbol(symbol: &str) -> Result<BinOp, Error> {
+        match symbol {
+            symbols::DOT => Ok(BinOp::Dot),
+            symbols::TIMES => Ok(BinOp::Times),
+            symbols::BY => Ok(BinOp::By),
+            symbols::MODULO => Ok(BinOp::Modulo),
+            symbols::PLUS => Ok(BinOp::Plus),
+            symbols::MINUS => Ok(BinOp::Minus),
+            symbols::EQUAL => Ok(BinOp::Equal),
+            symbols::NOT_EQUAL => Ok(BinOp::NotEqual),
+            symbols::LESS_THAN => Ok(BinOp::LessThan),
+            symbols::LESS_OR_EQUAL => Ok(BinOp::LessOrEqual),
+            symbols::GREATER_THAN => Ok(BinOp::GreaterThan),
+            symbols::GREATER_OR_EQUAL => Ok(BinOp::GreaterOrEqual),
+            symbols::AND => Ok(BinOp::And),
+            symbols::OR => Ok(BinOp::Or),
+            symbols::LEFT_ARROW => Ok(BinOp::LeftArrow),
+            symbols::ASSIGN => Ok(BinOp::Assign),
+            symbols::COMMA => Ok(BinOp::Comma),
+            symbols::SEMICOLON => Ok(BinOp::Semicolon),
+            _ => Err(
+                Error::from(format!("Don't know a binary operator with symbol {}.",
+                                    symbol))
+            )
         }
     }
 }
