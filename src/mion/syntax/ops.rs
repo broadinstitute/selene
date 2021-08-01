@@ -26,6 +26,7 @@ pub(crate) mod symbols {
     pub(crate) const CLOSE_BRACKETS: &str = "}";
 }
 
+#[derive(Clone)]
 pub(crate) enum BinOp {
     Dot,
     Times,

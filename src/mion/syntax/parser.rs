@@ -150,10 +150,11 @@ pub(crate) fn product(i: &str) -> ParseResult<Expression> {
             pair(function_call,
                  many0(tuple((
                      whitespace,
-                     map_res(
-                         alt((tag(symbols::TIMES), tag(symbols::BY), tag(symbols::MODULO))),
-                         |op_str| { BinOp::from_symbol(op_str) },
-                     ),
+                     alt((
+                         value(BinOp::Times, tag(symbols::TIMES)),
+                         value(BinOp::By, tag(symbols::BY)),
+                         value(BinOp::Modulo, tag(symbols::MODULO))
+                     )),
                      whitespace,
                      function_call
                  ))),
@@ -166,9 +167,10 @@ pub(crate) fn sum(i: &str) -> ParseResult<Expression> {
             pair(product,
                  many0(tuple((
                      whitespace,
-                     map_res(
-                         alt((tag(symbols::PLUS), tag(symbols::MINUS))),
-                         |op_str| { BinOp::from_symbol(op_str) }),
+                     alt((
+                         value(BinOp::Plus, tag(symbols::PLUS)),
+                         value(BinOp::Minus, tag(symbols::MINUS))
+                     )),
                      whitespace,
                      product
                  ))),
@@ -181,16 +183,16 @@ pub(crate) fn comparison(i: &str) -> ParseResult<Expression> {
             tuple((
                 sum,
                 whitespace,
-                map_res(
-                    alt((
-                        tag(symbols::EQUAL), tag(symbols::NOT_EQUAL), tag(symbols::LESS_THAN),
-                        tag(symbols::LESS_OR_EQUAL), tag(symbols::GREATER_THAN),
-                        tag(symbols::GREATER_OR_EQUAL)
-                    )),
-                    |op_str| { BinOp::from_symbol(op_str) },
-                ),
+                alt((
+                    value(BinOp::Equal, tag(symbols::EQUAL)),
+                    value(BinOp::Equal, tag(symbols::NOT_EQUAL)),
+                    value(BinOp::Equal, tag(symbols::LESS_THAN)),
+                    value(BinOp::Equal, tag(symbols::LESS_OR_EQUAL)),
+                    value(BinOp::Equal, tag(symbols::GREATER_THAN)),
+                    value(BinOp::Equal, tag(symbols::GREATER_OR_EQUAL))
+                )),
                 whitespace,
-                sum
+                sum,
             )).map(|parsed| {
                 let (lhs, _, op, _, rhs) = parsed;
                 Expression::Binary(Box::new(lhs), op,
@@ -204,7 +206,7 @@ pub(crate) fn conjunction(i: &str) -> ParseResult<Expression> {
             pair(function_call,
                  many0(tuple((
                      whitespace,
-                     tag(symbols::AND).map(|_| { BinOp::And }),
+                     value(BinOp::And, tag(symbols::AND)),
                      whitespace,
                      function_call
                  ))),
@@ -217,7 +219,7 @@ pub(crate) fn disjunction(i: &str) -> ParseResult<Expression> {
             pair(conjunction,
                  many0(tuple((
                      whitespace,
-                     tag(symbols::OR).map(|_| { BinOp::Or }),
+                     value(BinOp::Or, tag(symbols::OR)),
                      whitespace,
                      conjunction
                  ))),
