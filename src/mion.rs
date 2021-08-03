@@ -1,1 +1,1 @@
-mod syntax;
+pub(crate) mod syntax;

@@ -17,7 +17,7 @@ impl Input {
     }
     pub(crate) fn variants<'a>(self) -> impl Iterator<Item=(Variant, String)> + 'a {
         self.reader.lines().filter_map(|line_res|{
-            match line_res {
+             match line_res {
                 Ok(line) => Some(line),
                 Err(io_error) => {
                     println!("Error: {}", Error::IO(io_error));

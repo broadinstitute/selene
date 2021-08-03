@@ -2,7 +2,7 @@ use std::io::{Write, BufWriter};
 use crate::util::error::Error;
 use std::fs::File;
 use crate::variant::Variant;
-use crate::meta_lines;
+use crate::cache::meta_lines;
 
 pub(crate) struct MissesFile {
     write: BufWriter<Box<dyn Write>>,

@@ -1,13 +1,18 @@
 use crate::util::error::Error;
 use clap::{App, SubCommand, Arg};
 
-pub(crate) struct Config {
-    pub(crate) input_config: InputConfig,
+pub(crate) enum Config {
+    Tabix(TabixConfig),
+    Script(ScriptConfig),
+}
+
+pub(crate) struct TabixConfig {
+    pub(crate) input_config: TabixInputConfig,
     pub(crate) cache_misses_file_opt: Option<String>,
     pub(crate) output_file_opt: Option<String>,
 }
 
-pub(crate) struct InputConfig {
+pub(crate) struct TabixInputConfig {
     pub(crate) data_file: String,
     pub(crate) index_file: String,
     pub(crate) input_file: String,
@@ -16,11 +21,15 @@ pub(crate) struct InputConfig {
     pub(crate) col_alt: String,
 }
 
-impl Config {
-    fn new(input_config: InputConfig, cache_misses_file_opt: Option<String>,
+pub(crate) struct ScriptConfig {
+    pub(crate) script_file: String,
+}
+
+impl TabixConfig {
+    fn new(input_config: TabixInputConfig, cache_misses_file_opt: Option<String>,
            output_file_opt: Option<String>)
-           -> Config {
-        Config {
+           -> TabixConfig {
+        TabixConfig {
             input_config,
             cache_misses_file_opt,
             output_file_opt,
@@ -28,16 +37,16 @@ impl Config {
     }
 }
 
-impl InputConfig {
+impl TabixInputConfig {
     pub(crate) fn new(data_file: String, index_file_opt: Option<String>, input_file: String,
                       regions_file_opt: Option<String>, col_ref: String, col_alt: String)
-        -> InputConfig {
+                      -> TabixInputConfig {
         let index_file =
             match index_file_opt {
                 Some(index_file) => index_file,
                 None => data_file.clone() + ".tbi"
             };
-        InputConfig {
+        TabixInputConfig {
             data_file,
             index_file,
             input_file,
@@ -48,8 +57,15 @@ impl InputConfig {
     }
 }
 
+impl ScriptConfig {
+    fn new(script_file: String) -> ScriptConfig {
+        ScriptConfig { script_file }
+    }
+}
+
 mod names {
     pub(crate) const TABIX: &str = "tabix";
+    pub(crate) const SCRIPT: &str = "script";
     pub(crate) const DATA_FILE: &str = "data-file";
     pub(crate) const INDEX_FILE: &str = "index-file";
     pub(crate) const INPUT_FILE: &str = "input-file";
@@ -58,6 +74,7 @@ mod names {
     pub(crate) const OUTPUT_FILE: &str = "output-file";
     pub(crate) const COL_REF: &str = "col-ref";
     pub(crate) const COL_ALT: &str = "col-alt";
+    pub(crate) const SCRIPT_FILE: &str = "script-file";
 }
 
 pub(crate) fn get_config() -> Result<Config, Error> {
@@ -120,6 +137,12 @@ pub(crate) fn get_config() -> Result<Config, Error> {
                         .takes_value(true)
                         .help("The column name in data file containing the alt allele")
                     )
+            )
+            .subcommand(
+                SubCommand::with_name(names::SCRIPT)
+                    .arg(Arg::with_name(names::SCRIPT_FILE)
+                        .value_name("script file")
+                        .takes_value(true))
             );
     let matches = app.get_matches();
     if let Some(tabix_matches) = matches.subcommand_matches(names::TABIX) {
@@ -144,10 +167,20 @@ pub(crate) fn get_config() -> Result<Config, Error> {
             String::from(tabix_matches.value_of(names::COL_ALT)
                 .ok_or_else(|| Error::from("Missing argument --col-alt."))?);
         let input_config =
-            InputConfig::new(data_file, index_file_opt, input_file, regions_file_opt, col_ref,
-                             col_alt);
-        Ok(Config::new(input_config, cache_misses_file_opt, output_file_opt))
+            TabixInputConfig::new(data_file, index_file_opt, input_file, regions_file_opt, col_ref,
+                                  col_alt);
+        let tabix_config =
+            TabixConfig::new(input_config, cache_misses_file_opt, output_file_opt);
+        Ok(Config::Tabix(tabix_config))
+    } else if let Some(script_matches) =
+    matches.subcommand_matches(names::SCRIPT) {
+        let script_file =
+            String::from(script_matches.value_of(names::SCRIPT_FILE)
+                .ok_or_else(|| Error::from("Missing argument for script file."))?);
+        let script_config = ScriptConfig::new(script_file);
+        Ok(Config::Script(script_config))
     } else {
-        Err(Error::from("Need to specify sub-command."))
+        Err(Error::from(format!("Need to specify sub-command ({} or {}).",
+                                names::TABIX, names::SCRIPT)))
     }
 }

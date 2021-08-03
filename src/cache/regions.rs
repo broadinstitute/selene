@@ -152,7 +152,7 @@ fn overlaps_intervals(interval: &Interval, intervals: &[Interval]) -> bool {
 #[cfg(test)]
 mod tests {
     use crate::util::error::Error;
-    use crate::regions::Regions;
+    use crate::cache::regions::Regions;
     use crate::variant::Variant;
     use std::io::{BufWriter, Write};
     use std::fs::File;

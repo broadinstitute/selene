@@ -8,16 +8,13 @@ use nom::multi::{many0, many1};
 use nom::number::complete::double;
 use nom::Parser;
 use nom::sequence::{pair, tuple, delimited};
+use crate::Error;
 
-use crate::mion::syntax::expressions::{Expression, Iteration, Assignment, Scatter, Block};
+use crate::mion::syntax::expressions::{Expression, Iteration, Assignment, Scatter, Block, Script};
 use crate::mion::syntax::expressions::Identifier;
 use crate::mion::syntax::expressions::Literal;
 use crate::mion::syntax::ops::{BinOp, symbols};
 use crate::mion::syntax::string;
-
-pub(crate) trait MParser<'a, O>: Parser<&'a str, O, VerboseError<&'a str>> {}
-
-impl<'a, T, O> MParser<'a, O> for T where T: Parser<&'a str, O, VerboseError<&'a str>> {}
 
 type ParseResult<'a, O> = IResult<&'a str, O, VerboseError<&'a str>>;
 
@@ -185,11 +182,11 @@ pub(crate) fn comparison(i: &str) -> ParseResult<Expression> {
                 whitespace,
                 alt((
                     value(BinOp::Equal, tag(symbols::EQUAL)),
-                    value(BinOp::Equal, tag(symbols::NOT_EQUAL)),
-                    value(BinOp::Equal, tag(symbols::LESS_THAN)),
-                    value(BinOp::Equal, tag(symbols::LESS_OR_EQUAL)),
-                    value(BinOp::Equal, tag(symbols::GREATER_THAN)),
-                    value(BinOp::Equal, tag(symbols::GREATER_OR_EQUAL))
+                    value(BinOp::NotEqual, tag(symbols::NOT_EQUAL)),
+                    value(BinOp::LessThan, tag(symbols::LESS_THAN)),
+                    value(BinOp::LessOrEqual, tag(symbols::LESS_OR_EQUAL)),
+                    value(BinOp::GreaterThan, tag(symbols::GREATER_THAN)),
+                    value(BinOp::GreaterOrEqual, tag(symbols::GREATER_OR_EQUAL))
                 )),
                 whitespace,
                 sum,
@@ -203,12 +200,12 @@ pub(crate) fn comparison(i: &str) -> ParseResult<Expression> {
 
 pub(crate) fn conjunction(i: &str) -> ParseResult<Expression> {
     context("conjunction",
-            pair(function_call,
+            pair(alt((comparison, function_call)),
                  many0(tuple((
                      whitespace,
                      value(BinOp::And, tag(symbols::AND)),
                      whitespace,
-                     function_call
+                     alt((comparison, function_call))
                  ))),
             ).map(build_bin_ops_chain),
     )(i)
@@ -263,10 +260,11 @@ pub(crate) fn assignment(i: &str) -> ParseResult<Assignment> {
 
 pub(crate) fn expression(i: &str) -> ParseResult<Expression> {
     alt((
-        sum, disjunction,
         assignment.map(|assignment| Expression::Assignment(Box::new(assignment))),
         scatter.map(|scatter| Expression::Scatter(Box::new(scatter))),
-        block.map(Expression::Block)
+        block.map(Expression::Block),
+        disjunction,
+        sum,
     ))(i)
 }
 
@@ -292,13 +290,13 @@ pub(crate) fn expressions(i: &str) -> ParseResult<Vec<Expression>> {
     context("expressions",
             tuple((
                 expression,
-                many0(pair(whitespace, expression)),
+                many0(tuple((whitespace, tag(symbols::SEMICOLON), whitespace, expression))),
                 opt(pair(whitespace, tag(symbols::SEMICOLON)))
             )).map(|parsed| {
                 let (expression0, more_parts, _) = parsed;
                 let mut expressions = vec!(expression0);
                 for part in more_parts {
-                    let (_, expression) = part;
+                    let (_, _, _, expression) = part;
                     expressions.push(expression);
                 }
                 expressions
@@ -314,4 +312,12 @@ pub(crate) fn block(i: &str) -> ParseResult<Block> {
                 pair(whitespace, tag(symbols::CLOSE_BRACKETS)),
             ).map(|expressions| Block { expressions }),
     )(i)
+}
+
+pub(crate) fn script(i: &str) -> ParseResult<Script> {
+    context("script", expressions.map(Script::new))(i)
+}
+
+pub(crate) fn parse_script(string: &str) -> Result<Script, Error> {
+    Ok(script(string)?.1)
 }

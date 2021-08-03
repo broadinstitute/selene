@@ -17,7 +17,7 @@ pub(crate) fn chromosome_line(chromosomes: &[String]) -> String {
 }
 
 pub(crate) fn write_meta_lines(write: &mut impl Write, meta_lines: &[String])
-    -> Result<(), Error> {
+                               -> Result<(), Error> {
     for meta_line in meta_lines {
         write.write_all(format!("{}\n", meta_line).as_bytes())?;
     }

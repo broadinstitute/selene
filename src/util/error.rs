@@ -4,6 +4,8 @@ use clap::ErrorKind;
 use std::string::FromUtf8Error;
 use std::num::ParseIntError;
 use bgzip::BGZFError;
+use nom::error::VerboseError;
+use nom::Err;
 
 pub struct SeleneError {
     message: String,
@@ -16,6 +18,7 @@ pub enum Error {
     Utf8(string::FromUtf8Error),
     ParseInt(ParseIntError),
     Bgzf(BGZFError),
+    Nom(String),
 }
 
 pub(crate) trait Reporter {
@@ -48,6 +51,7 @@ impl Error {
             Error::Utf8(_) => { 4 }
             Error::ParseInt(_) => { 5 }
             Error::Bgzf(_) => { 6 }
+            Error::Nom(_) => { 7 }
         }
     }
 }
@@ -92,6 +96,10 @@ impl From<BGZFError> for Error {
     fn from(bgzf_error: BGZFError) -> Self { Error::Bgzf(bgzf_error) }
 }
 
+impl From<nom::Err<VerboseError<&str>>> for Error {
+    fn from(nom_error: Err<VerboseError<&str>>) -> Self { Error::Nom(nom_error.to_string()) }
+}
+
 impl Display for SeleneError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         std::fmt::Display::fmt(&self.message, f)
@@ -109,6 +117,7 @@ impl Display for Error {
                 fmt::Display::fmt(&parse_int_error, f)
             }
             Error::Bgzf(bgzf_error) => { fmt::Display::fmt(&bgzf_error, f) }
+            Error::Nom(nom_error) => { fmt::Display::fmt(&nom_error, f) }
         }
     }
 }

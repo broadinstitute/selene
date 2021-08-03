@@ -165,25 +165,3 @@ pub(crate) fn parse_string<'a, E>(input: &'a str) -> IResult<&'a str, String, E>
     delimited(char('"'), build_string, char('"'))(input)
 }
 
-fn main() {
-    let data = "\"abc\"";
-    println!("EXAMPLE 1:\nParsing a simple input string: {}", data);
-    let result = parse_string::<()>(data);
-    assert_eq!(result, Ok(("", String::from("abc"))));
-    println!("Result: {}\n\n", result.unwrap().1);
-
-    let data = "\"tab:\\tafter tab, newline:\\nnew line, quote: \\\", emoji: \\u{1F602}, newline:\\nescaped whitespace: \\    abc\"";
-    println!(
-        "EXAMPLE 2:\nParsing a string with escape sequences, newline literal, and escaped whitespace:\n\n{}\n",
-        data
-    );
-    let result = parse_string::<()>(data);
-    assert_eq!(
-        result,
-        Ok((
-            "",
-            String::from("tab:\tafter tab, newline:\nnew line, quote: \", emoji: 😂, newline:\nescaped whitespace: abc")
-        ))
-    );
-    println!("Result:\n\n{}", result.unwrap().1);
-}

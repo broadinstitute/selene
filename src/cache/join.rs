@@ -1,15 +1,15 @@
 use crate::util::error::Error;
 use bgzip::BGZFReader;
 use std::io::{Read, Seek, BufRead};
-use crate::input::Input;
+use crate::cache::input::Input;
 use bgzip::tabix::Tabix;
-use crate::output::Output;
-use crate::misses::MissesFile;
+use crate::cache::output::Output;
+use crate::cache::misses::MissesFile;
 use crate::variant::{ICols, Variant};
 use crate::variant;
-use crate::tabix;
+use crate::tabix::tabix_index;
 use crate::tsv::IAlleleCols;
-use crate::regions::Regions;
+use crate::cache::regions::Regions;
 
 struct SequenceMeta {
     name: String,
@@ -65,11 +65,11 @@ pub(crate) fn join_input_with_data<R>(input: Input, mut bgzf: BGZFReader<R>, tab
                     tabix.sequences.get(i_seq).ok_or_else(|| {
                         Error::from(format!("Index {} out of range for sequences.", i_seq))
                     })?;
-                let i_interval = tabix::pos_to_i_interval(variant.pos);
+                let i_interval = tabix_index::pos_to_i_interval(variant.pos);
                 match sequence.intervals.get(i_interval as usize) {
                     None => { misses_file.write_variant(&variant)?; }
                     Some(vpos_interval) => {
-                        let bins = tabix::variant_to_bins(&variant);
+                        let bins = tabix_index::variant_to_bins(&variant);
                         let mut vposes: Vec<u64> =
                             bins.iter().flat_map(|k| sequence.bins.get(k))
                                 .flat_map(|tabix_bin| { &tabix_bin.chunks })

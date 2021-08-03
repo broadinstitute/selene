@@ -11,3 +11,6 @@
 
 # IntelliJ IDEA
 .idea/
+
+# Temporary files
+tmp/
