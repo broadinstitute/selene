@@ -41,12 +41,6 @@ pub(crate) enum Expression {
     Block(Block),
 }
 
-impl Expression {
-    pub(crate) fn new_identifier(id_str: &str) -> Expression {
-        Expression::Identifier(Identifier::new(id_str.to_string()))
-    }
-}
-
 pub(crate) struct Identifier {
     pub(crate) name: String,
 }
