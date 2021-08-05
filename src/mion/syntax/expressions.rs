@@ -1,5 +1,8 @@
 use crate::mion::syntax::ops::BinOp;
 use std::fmt::{Display, Formatter};
+use crate::Error;
+use crate::mion::eval::eval;
+use crate::util::iter_util::fmt_vec;
 
 pub(crate) struct Script {
     pub(crate) expressions: Vec<Expression>,
@@ -8,6 +11,9 @@ pub(crate) struct Script {
 impl Script {
     pub(crate) fn new(expressions: Vec<Expression>) -> Script {
         Script { expressions }
+    }
+    pub(crate) fn compile(&self) -> Result<eval::Script, Error> {
+        Ok(eval::Script::new())
     }
 }
 
@@ -77,16 +83,7 @@ impl Display for Expression {
             }
             Expression::Call(callee, args) => {
                 callee.fmt(f)?;
-                "(".fmt(f)?;
-                let mut args_iter = args.iter();
-                if let Some(arg0) = args_iter.next() {
-                    arg0.fmt(f)?;
-                    for arg in args_iter {
-                        ", ".fmt(f)?;
-                        arg.fmt(f)?;
-                    }
-                }
-                ")".fmt(f)
+                fmt_vec("(", args, ")", f)
             }
             Expression::Scatter(scatter) => { scatter.fmt(f) }
             Expression::Assignment(assignment) => { assignment.fmt(f) }
