@@ -1,5 +1,4 @@
 use crate::util::error::Error;
-use super::symbols::Symbols;
 use super::values::Value;
 use crate::mion::syntax::ops::BinOp;
 use crate::mion::eval::identifier::Identifier;

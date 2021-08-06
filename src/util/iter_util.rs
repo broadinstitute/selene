@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
 
-pub(crate) fn fmt_vec<T: Display>(pre: &str, vec: &Vec<T>, post: &str, f: &mut Formatter<'_>)
+pub(crate) fn fmt_vec<T: Display>(pre: &str, vec: &[T], post: &str, f: &mut Formatter<'_>)
     -> std::fmt::Result {
     pre.fmt(f)?;
     let mut iter = vec.iter();

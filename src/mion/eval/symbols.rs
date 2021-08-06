@@ -1,7 +1,6 @@
-use crate::mion::eval::eval::Expression;
-use crate::util::error::Error;
 use crate::mion::eval::values::Value;
 use crate::mion::eval::identifier::Identifier;
+use std::rc::Rc;
 
 pub(crate) struct Symbols {
     pub(crate) var_entries: VarEntries
@@ -14,7 +13,7 @@ pub(crate) enum VarEntry {
 
 pub(crate) enum VarEntries {
     Nil,
-    Entry(Box<VarEntries>, Identifier, VarEntry)
+    Entry(Rc<VarEntries>, Identifier, VarEntry)
 }
 
 impl Symbols {
@@ -29,6 +28,15 @@ impl Symbols {
     pub(crate) fn with_var_value_entry(self, identifier: &Identifier, value: &Value) -> Symbols {
         let var_entries = self.var_entries.with_value_entry(identifier, value);
         Symbols { var_entries }
+    }
+}
+
+impl Clone for VarEntry {
+    fn clone(&self) -> Self {
+        match self {
+            VarEntry::Uninitialized => { VarEntry::Uninitialized}
+            VarEntry::Value(value) => { VarEntry::Value(value.clone()) }
+        }
     }
 }
 
@@ -47,12 +55,30 @@ impl VarEntries {
         }
     }
     pub(crate) fn with_uninitialized_entry(self, identifier: &Identifier) -> VarEntries {
-        VarEntries::Entry(Box::new(self), identifier.clone(),
+        VarEntries::Entry(Rc::new(self), identifier.clone(),
                           VarEntry::Uninitialized)
     }
     pub(crate) fn with_value_entry(self, identifier: &Identifier, value: &Value) -> VarEntries {
-        VarEntries::Entry(Box::new(self), identifier.clone(),
+        VarEntries::Entry(Rc::new(self), identifier.clone(),
                           VarEntry::Value(value.clone()))
     }
 }
 
+impl Clone for VarEntries {
+    fn clone(&self) -> Self {
+        match self {
+            VarEntries::Nil => { VarEntries::Nil }
+            VarEntries::Entry(var_entries, identifier, entry) => {
+                VarEntries::Entry(var_entries.clone(), identifier.clone(),
+                                  entry.clone())
+            }
+        }
+    }
+}
+
+impl Clone for Symbols {
+    fn clone(&self) -> Self {
+        let var_entries = self.var_entries.clone();
+        Symbols { var_entries }
+    }
+}

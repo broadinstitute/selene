@@ -1,7 +1,7 @@
 use crate::mion::syntax::ops::BinOp;
 use std::fmt::{Display, Formatter};
 use crate::Error;
-use crate::mion::eval::eval;
+use crate::mion::eval::expressions;
 use crate::util::iter_util::fmt_vec;
 use crate::mion::eval::symbols::{Symbols, VarEntry};
 use crate::mion::eval::values::Value;
@@ -15,24 +15,31 @@ impl Script {
     pub(crate) fn new(expressions: Vec<Expression>) -> Script {
         Script { expressions }
     }
-    pub(crate) fn compile(&self) -> Result<eval::Script, Error> {
-        let mut eval_expressions = Vec::<eval::Expression>::new();
+    pub(crate) fn compile(&self) -> Result<expressions::Script, Error> {
         let mut symbols = Symbols::new();
-        for expression in &self.expressions {
-            let eval_expression = expression.compile(&symbols)?;
-            if let eval::Expression::Assignment(assignment) = &eval_expression {
-                let identifier = &assignment.lhs;
-                let rhs = &assignment.rhs;
-                if let eval::Expression::Value(value) = rhs {
-                    symbols = symbols.with_var_value_entry(&identifier, &value);
-                } else {
-                    symbols = symbols.with_var_uninitialized_entry(&identifier);
-                }
-            }
-            eval_expressions.push(eval_expression);
-        }
-        Ok(eval::Script::new(eval_expressions))
+        let eval_expressions = compile_expressions(&self.expressions, &symbols)?;
+        Ok(expressions::Script::new(eval_expressions))
     }
+}
+
+fn compile_expressions(expressions: &[Expression], symbols: &Symbols)
+    -> Result<Vec<expressions::Expression>, Error> {
+    let mut eval_expressions = Vec::<expressions::Expression>::new();
+    let mut symbols_local = symbols.clone();
+    for expression in expressions {
+        let eval_expression = expression.compile(&symbols)?;
+        if let expressions::Expression::Assignment(assignment) = &eval_expression {
+            let identifier = &assignment.lhs;
+            let rhs = &assignment.rhs;
+            if let expressions::Expression::Value(value) = rhs {
+                symbols_local = symbols_local.with_var_value_entry(&identifier, &value);
+            } else {
+                symbols_local = symbols_local.with_var_uninitialized_entry(&identifier);
+            }
+        }
+        eval_expressions.push(eval_expression);
+    }
+    Ok(eval_expressions)
 }
 
 pub(crate) struct Block {
@@ -66,7 +73,7 @@ pub(crate) enum Expression {
 }
 
 impl Expression {
-    pub(crate) fn compile(&self, symbols: &Symbols) -> Result<eval::Expression, Error> {
+    pub(crate) fn compile(&self, symbols: &Symbols) -> Result<expressions::Expression, Error> {
         match self {
             Expression::Identifier(identifier) => {
                 match symbols.var_entries.get(identifier) {
@@ -74,58 +81,56 @@ impl Expression {
                         Err(Error::from(format!("Unknown variable {}.", identifier)))
                     }
                     Some(VarEntry::Uninitialized) => {
-                        Ok(eval::Expression::Identifier(identifier.clone()))
+                        Ok(expressions::Expression::Identifier(identifier.clone()))
                     }
                     Some(VarEntry::Value(value)) => {
-                        Ok(eval::Expression::Value(value.clone()))
+                        Ok(expressions::Expression::Value(value.clone()))
                     }
                 }
             }
             Expression::Literal(literal) => {
-                Ok(eval::Expression::Value(literal.to_value()))
+                Ok(expressions::Expression::Value(literal.to_value()))
             }
             Expression::Binary(lhs, op, rhs) => {
                 let eval_lhs = Box::new(lhs.compile(symbols)?);
                 let eval_rhs = Box::new(rhs.compile(symbols)?);
-                Ok(eval::Expression::Binary(eval_lhs, *op,
-                                            eval_rhs))
+                Ok(expressions::Expression::Binary(eval_lhs, *op,
+                                                   eval_rhs))
             }
             Expression::Member(expression, identifier) => {
                 let eval_expression = Box::new(expression.compile(symbols)?);
-                Ok(eval::Expression::Member(eval_expression,
-                                            identifier.clone()))
+                Ok(expressions::Expression::Member(eval_expression,
+                                                   identifier.clone()))
             }
             Expression::Call(callee, arguments) => {
                 let eval_callee = Box::new(callee.compile(symbols)?);
-                let mut eval_arguments = Vec::<eval::Expression>::new();
+                let mut eval_arguments = Vec::<expressions::Expression>::new();
                 for argument in arguments {
                     eval_arguments.push(argument.compile(symbols)?);
                 }
-                Ok(eval::Expression::Call(eval_callee, eval_arguments))
+                Ok(expressions::Expression::Call(eval_callee, eval_arguments))
             }
             Expression::Scatter(scatter) => {
                 let eval_iteration_lhs = scatter.iteration.lhs.clone();
                 let eval_iteration_expression = scatter.iteration.rhs.compile(symbols)?;
                 let eval_expression = scatter.expression.compile(symbols)?;
                 let eval_iteration =
-                    eval::Iteration::new(eval_iteration_lhs, eval_iteration_expression);
-                let eval_scatter = eval::Scatter::new(eval_iteration, eval_expression);
-                Ok(eval::Expression::Scatter(Box::new(eval_scatter)))
+                    expressions::Iteration::new(eval_iteration_lhs, eval_iteration_expression);
+                let eval_scatter = expressions::Scatter::new(eval_iteration, eval_expression);
+                Ok(expressions::Expression::Scatter(Box::new(eval_scatter)))
             }
             Expression::Assignment(assignment) => {
                 let eval_identifier = assignment.lhs.clone();
                 let eval_expression = assignment.rhs.compile(symbols)?;
                 let eval_assignment =
-                    eval::Assignment::new(eval_identifier, eval_expression);
-                Ok(eval::Expression::Assignment(Box::new(eval_assignment)))
+                    expressions::Assignment::new(eval_identifier, eval_expression);
+                Ok(expressions::Expression::Assignment(Box::new(eval_assignment)))
             }
             Expression::Block(block) => {
-                let mut eval_expressions = Vec::new();
-                for expression in &block.expressions {
-                    eval_expressions.push(expression.compile(symbols)?);
-                }
-                let eval_block = eval::Block::new(eval_expressions);
-                Ok(eval::Expression::Block(Box::new(eval_block)))
+                let eval_expressions =
+                    compile_expressions(&block.expressions, symbols)?;
+                let eval_block = expressions::Block::new(eval_expressions);
+                Ok(expressions::Expression::Block(Box::new(eval_block)))
             }
         }
     }
