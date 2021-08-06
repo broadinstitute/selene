@@ -11,10 +11,10 @@ use nom::sequence::{pair, tuple, delimited};
 use crate::Error;
 
 use crate::mion::syntax::expressions::{Expression, Iteration, Assignment, Scatter, Block, Script};
-use crate::mion::syntax::expressions::Identifier;
 use crate::mion::syntax::expressions::Literal;
 use crate::mion::syntax::ops::{BinOp, symbols};
 use crate::mion::syntax::string;
+use crate::mion::eval::identifier::Identifier;
 
 type ParseResult<'a, O> = IResult<&'a str, O, VerboseError<&'a str>>;
 

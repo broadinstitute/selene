@@ -1,11 +1,41 @@
 use std::fmt::{Display, Formatter};
 use crate::util::iter_util::fmt_vec;
+use std::rc::Rc;
 
 pub(crate) enum Value {
-    String(String),
+    String(Rc<String>),
     Int(i64),
     Float(f64),
-    Array(Vec<Value>)
+    Array(Rc<Vec<Value>>),
+}
+
+impl Clone for Value {
+    fn clone(&self) -> Self {
+        match self {
+            Value::String(string_rc) => { Value::String(string_rc.clone()) }
+            Value::Int(_) => { self.clone() }
+            Value::Float(_) => { self.clone() }
+            Value::Array(array_rc) => { Value::Array(array_rc.clone()) }
+        }
+    }
+}
+
+impl From<&String> for Value {
+    fn from(string: &String) -> Self {
+        Value::String(Rc::new(string.clone()))
+    }
+}
+
+impl From<&i64> for Value {
+    fn from(int: &i64) -> Self {
+        Value::Int(*int)
+    }
+}
+
+impl From<&f64> for Value {
+    fn from(float: &f64) -> Self {
+        Value::Float(*float)
+    }
 }
 
 impl Display for Value {
