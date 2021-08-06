@@ -1,6 +1,7 @@
 pub(crate) mod eval;
-mod symbols;
-mod values;
+pub(crate) mod symbols;
+pub(crate) mod values;
+pub(crate) mod scopes;
 
 
 

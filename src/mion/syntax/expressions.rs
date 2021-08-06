@@ -3,6 +3,8 @@ use std::fmt::{Display, Formatter};
 use crate::Error;
 use crate::mion::eval::eval;
 use crate::util::iter_util::fmt_vec;
+use crate::mion::eval::symbols::{Symbols, SymbolsExpressionResult, VarEntry};
+use crate::mion::eval::values::Value;
 
 pub(crate) struct Script {
     pub(crate) expressions: Vec<Expression>,
@@ -13,7 +15,9 @@ impl Script {
         Script { expressions }
     }
     pub(crate) fn compile(&self) -> Result<eval::Script, Error> {
-        Ok(eval::Script::new())
+        let mut eval_expressions = Vec::<eval::Expression>::new();
+        todo!();
+        Ok(eval::Script::new(eval_expressions))
     }
 }
 
@@ -47,6 +51,43 @@ pub(crate) enum Expression {
     Block(Block),
 }
 
+impl Expression {
+    pub(crate) fn compile(&self, symbols: &Symbols) -> Result<eval::Expression, Error> {
+        match self {
+            Expression::Identifier(identifier) => {
+                match symbols.var_entries.get(identifier) {
+                    None => {
+                        Err(Error::from(format!("Unknown variable {}.", identifier)))
+                    }
+                    Some(VarEntry::Uninitialized) => {
+                        Ok(eval::Expression::Identifier(identifier.name.clone()))
+                    }
+                    Some(VarEntry::Value(value)) => {
+                        Ok(eval::Expression::Value(*value.clone()))
+                    }
+                }
+            }
+            Expression::Literal(literal) => {
+                Ok(eval::Expression::Value(literal.to_value()))
+            }
+            Expression::Binary(lhs, op, rhs) => {
+                let eval_lhs = Box::new(lhs.compile(symbols)?);
+                let eval_rhs = Box::new(rhs.compile(symbols)?);
+                Ok(eval::Expression::Binary(eval_lhs, *op,
+                                            eval_rhs))
+            }
+            Expression::Member(expression, identifier) => {
+
+            }
+            Expression::Call(_, _) => {}
+            Expression::Scatter(_) => {}
+            Expression::Assignment(_) => {}
+            Expression::Block(_) => {}
+        }
+    }
+}
+
+#[derive(PartialEq)]
 pub(crate) struct Identifier {
     pub(crate) name: String,
 }
@@ -59,6 +100,16 @@ pub(crate) enum Literal {
     Int(i64),
     String(String),
     Float(f64),
+}
+
+impl Literal {
+    pub(crate) fn to_value(&self) -> Value {
+        match self {
+            Literal::Int(int) => { Value::Int(*int) }
+            Literal::String(string) => { Value::String(string.clone()) }
+            Literal::Float(float) => { Value::Float(*float) }
+        }
+    }
 }
 
 impl Display for Script {

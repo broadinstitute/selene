@@ -1,19 +1,21 @@
 use crate::util::error::Error;
-use super::symbols::{Symbols, SymbolsAndThing};
+use super::symbols::Symbols;
 use super::values::Value;
+use crate::mion::syntax::ops::BinOp;
 
-trait Evaluatable {
-    fn optimize(self, symbols: Symbols)
-                -> SymbolsAndThing<Box<Self>> where Self: Sized {
-        SymbolsAndThing::new(symbols, Box::new(self))
-    }
-    fn evaluate(&self, symbols: Symbols) -> SymbolsAndThing<Result<Value, Error>>;
+pub(crate) enum Expression {
+    Identifier(String),
+    Value(Value),
+    Binary(Box<Expression>, BinOp, Box<Expression>)
 }
 
-pub(crate) struct Script {}
+
+pub(crate) struct Script {
+    expressions: Vec<Expression>
+}
 
 impl Script {
-    pub(crate) fn new() -> Script { Script {} }
+    pub(crate) fn new(expressions: Vec<Expression>) -> Script { Script { expressions } }
     pub(crate) fn optimize(self) -> Script { self }
     pub(crate) fn evaluate(&self) -> Result<Value, Error> { unimplemented!() }
 }

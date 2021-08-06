@@ -25,7 +25,7 @@ pub(crate) mod symbols {
     pub(crate) const CLOSE_BRACKETS: &str = "}";
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub(crate) enum BinOp {
     Times,
     By,
