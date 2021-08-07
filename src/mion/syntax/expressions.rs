@@ -1,11 +1,12 @@
 use crate::mion::syntax::ops::BinOp;
 use std::fmt::{Display, Formatter};
 use crate::Error;
-use crate::mion::eval::expressions;
+use crate::mion::eval::{expressions, predef};
 use crate::util::iter_util::fmt_vec;
 use crate::mion::eval::symbols::{Symbols, VarEntry};
 use crate::mion::eval::values::Value;
 use crate::mion::eval::identifier::Identifier;
+use crate::mion::eval;
 
 pub(crate) struct Script {
     pub(crate) expressions: Vec<Expression>,
@@ -16,18 +17,18 @@ impl Script {
         Script { expressions }
     }
     pub(crate) fn compile(&self) -> Result<expressions::Script, Error> {
-        let mut symbols = Symbols::new();
+        let symbols = predef::predef_symbols();
         let eval_expressions = compile_expressions(&self.expressions, &symbols)?;
         Ok(expressions::Script::new(eval_expressions))
     }
 }
 
 fn compile_expressions(expressions: &[Expression], symbols: &Symbols)
-    -> Result<Vec<expressions::Expression>, Error> {
+                       -> Result<Vec<expressions::Expression>, Error> {
     let mut eval_expressions = Vec::<expressions::Expression>::new();
     let mut symbols_local = symbols.clone();
     for expression in expressions {
-        let eval_expression = expression.compile(&symbols)?;
+        let eval_expression = expression.compile(&symbols_local)?;
         if let expressions::Expression::Assignment(assignment) = &eval_expression {
             let identifier = &assignment.lhs;
             let rhs = &assignment.rhs;
@@ -51,6 +52,15 @@ pub(crate) struct Assignment {
     pub(crate) rhs: Expression,
 }
 
+impl Assignment {
+    pub(crate) fn compile(&self, symbols: &Symbols)
+                          -> Result<eval::expressions::Assignment, Error> {
+        let eval_identifier = self.lhs.clone();
+        let eval_expression = self.rhs.compile(symbols)?;
+        Ok(eval::expressions::Assignment::new(eval_identifier, eval_expression))
+    }
+}
+
 pub(crate) struct Scatter {
     pub(crate) iteration: Iteration,
     pub(crate) expression: Box<Expression>,
@@ -66,7 +76,7 @@ pub(crate) enum Expression {
     Literal(Literal),
     Binary(Box<Expression>, BinOp, Box<Expression>),
     Member(Box<Expression>, Identifier),
-    Call(Box<Expression>, Vec<Expression>),
+    Call(Box<Expression>, Vec<Assignment>),
     Scatter(Box<Scatter>),
     Assignment(Box<Assignment>),
     Block(Block),
@@ -104,7 +114,7 @@ impl Expression {
             }
             Expression::Call(callee, arguments) => {
                 let eval_callee = Box::new(callee.compile(symbols)?);
-                let mut eval_arguments = Vec::<expressions::Expression>::new();
+                let mut eval_arguments = Vec::<eval::expressions::Assignment>::new();
                 for argument in arguments {
                     eval_arguments.push(argument.compile(symbols)?);
                 }
@@ -113,17 +123,25 @@ impl Expression {
             Expression::Scatter(scatter) => {
                 let eval_iteration_lhs = scatter.iteration.lhs.clone();
                 let eval_iteration_expression = scatter.iteration.rhs.compile(symbols)?;
-                let eval_expression = scatter.expression.compile(symbols)?;
+                let symbols_scatter =
+                    if let eval::expressions::Expression::Value(iteration_value)
+                    = &eval_iteration_expression {
+                        symbols.clone()
+                            .with_var_value_entry(&eval_iteration_lhs, &iteration_value)
+                    } else {
+                        symbols.clone()
+                            .with_var_uninitialized_entry(&eval_iteration_lhs)
+                    };
+                let eval_expression =
+                    scatter.expression.compile(&symbols_scatter)?;
                 let eval_iteration =
                     expressions::Iteration::new(eval_iteration_lhs, eval_iteration_expression);
-                let eval_scatter = expressions::Scatter::new(eval_iteration, eval_expression);
+                let eval_scatter =
+                    expressions::Scatter::new(eval_iteration, eval_expression);
                 Ok(expressions::Expression::Scatter(Box::new(eval_scatter)))
             }
             Expression::Assignment(assignment) => {
-                let eval_identifier = assignment.lhs.clone();
-                let eval_expression = assignment.rhs.compile(symbols)?;
-                let eval_assignment =
-                    expressions::Assignment::new(eval_identifier, eval_expression);
+                let eval_assignment = assignment.compile(symbols)?;
                 Ok(expressions::Expression::Assignment(Box::new(eval_assignment)))
             }
             Expression::Block(block) => {
@@ -187,7 +205,7 @@ impl Display for Literal {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Literal::Int(int) => { int.fmt(f) }
-            Literal::String(string) => { string.fmt(f) }
+            Literal::String(string) => { format!("\"{}\"", string).fmt(f) }
             Literal::Float(float) => { float.fmt(f) }
         }
     }

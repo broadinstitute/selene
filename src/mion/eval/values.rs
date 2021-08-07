@@ -1,12 +1,14 @@
 use std::fmt::{Display, Formatter};
 use crate::util::iter_util::fmt_vec;
 use std::rc::Rc;
+use crate::mion::eval::expressions::Function;
 
 pub(crate) enum Value {
     String(Rc<String>),
     Int(i64),
     Float(f64),
     Array(Rc<Vec<Value>>),
+    Function(Rc<Box<dyn Function>>),
 }
 
 impl Clone for Value {
@@ -16,6 +18,7 @@ impl Clone for Value {
             Value::Int(_) => { self.clone() }
             Value::Float(_) => { self.clone() }
             Value::Array(array_rc) => { Value::Array(array_rc.clone()) }
+            Value::Function(function_rc) => { Value::Function(function_rc.clone())}
         }
     }
 }
@@ -45,6 +48,7 @@ impl Display for Value {
             Value::Int(int) => { int.fmt(f) }
             Value::Float(float) => { float.fmt(f) }
             Value::Array(values) => { fmt_vec("[", values, "]", f) }
+            Value::Function(function) => { function.id().fmt(f) }
         }
     }
 }

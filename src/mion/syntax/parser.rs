@@ -104,12 +104,12 @@ pub(crate) fn function_call(i: &str) -> ParseResult<Expression> {
                         tag(symbols::OPEN_PARENS),
                         opt(tuple((
                             whitespace,
-                            product,
+                            assignment,
                             many0(tuple((
                                 whitespace,
                                 tag(symbols::COMMA),
                                 whitespace,
-                                product
+                                assignment
                             )))
                         ))),
                         whitespace,

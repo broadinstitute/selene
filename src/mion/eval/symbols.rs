@@ -1,6 +1,7 @@
 use crate::mion::eval::values::Value;
 use crate::mion::eval::identifier::Identifier;
 use std::rc::Rc;
+use crate::mion::eval::expressions::Function;
 
 pub(crate) struct Symbols {
     pub(crate) var_entries: VarEntries
@@ -26,7 +27,12 @@ impl Symbols {
         Symbols { var_entries }
     }
     pub(crate) fn with_var_value_entry(self, identifier: &Identifier, value: &Value) -> Symbols {
+        println!("Initializing variable {}", identifier);
         let var_entries = self.var_entries.with_value_entry(identifier, value);
+        Symbols { var_entries }
+    }
+    pub(crate) fn with_function_entry(self, function: Box<dyn Function>) -> Symbols {
+        let var_entries = self.var_entries.with_function_entry(function);
         Symbols { var_entries }
     }
 }
@@ -61,6 +67,12 @@ impl VarEntries {
     pub(crate) fn with_value_entry(self, identifier: &Identifier, value: &Value) -> VarEntries {
         VarEntries::Entry(Rc::new(self), identifier.clone(),
                           VarEntry::Value(value.clone()))
+    }
+    pub(crate) fn with_function_entry(self, function: Box<dyn Function>) -> VarEntries {
+        let identifier = Identifier::new(String::from(function.id()));
+        let value = Value::Function(Rc::new(function));
+        self.with_value_entry(&identifier, &value)
+
     }
 }
 

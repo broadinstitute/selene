@@ -8,7 +8,7 @@ pub(crate) enum Expression {
     Value(Value),
     Binary(Box<Expression>, BinOp, Box<Expression>),
     Member(Box<Expression>, Identifier),
-    Call(Box<Expression>, Vec<Expression>),
+    Call(Box<Expression>, Vec<Assignment>),
     Scatter(Box<Scatter>),
     Assignment(Box<Assignment>),
     Block(Box<Block>),
@@ -55,6 +55,11 @@ impl Block {
     pub(crate) fn new(expressions: Vec<Expression>) -> Block {
         Block { expressions }
     }
+}
+
+pub(crate) trait Function {
+    fn id(&self) -> &str;
+    fn call(&self, args: &[Value]) -> Result<Value, Error>;
 }
 
 pub(crate) struct Script {
