@@ -1,4 +1,4 @@
 chroms = split_by_chrom(input_file = "input_file.vcf");
-(chrom <- chroms.parallel) {
+(chrom <- chroms) {
     tabix(chrom = chrom);
 }

@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Eq, Hash)]
 pub(crate) struct Identifier {
     name: String
 }

@@ -124,14 +124,8 @@ impl Expression {
                 let eval_iteration_lhs = scatter.iteration.lhs.clone();
                 let eval_iteration_expression = scatter.iteration.rhs.compile(symbols)?;
                 let symbols_scatter =
-                    if let eval::expressions::Expression::Value(iteration_value)
-                    = &eval_iteration_expression {
                         symbols.clone()
-                            .with_var_value_entry(&eval_iteration_lhs, &iteration_value)
-                    } else {
-                        symbols.clone()
-                            .with_var_uninitialized_entry(&eval_iteration_lhs)
-                    };
+                            .with_var_uninitialized_entry(&eval_iteration_lhs);
                 let eval_expression =
                     scatter.expression.compile(&symbols_scatter)?;
                 let eval_iteration =
