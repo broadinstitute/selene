@@ -1,4 +1,7 @@
-chroms = split_by_chrom(input_file = "input_file.vcf");
+chroms = split_by_chrom(
+     input_file = "/home/oliverr/lunaris/vep/test/inputs/sample_input_1e6.vcf",
+     output_folder = "/home/oliverr/lunaris/vep/test/tmp"
+);
 (chrom <- chroms) {
     tabix(chrom = chrom);
 }

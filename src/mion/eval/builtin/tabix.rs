@@ -1,4 +1,4 @@
-use crate::mion::eval::expressions::{Function, Assignment};
+use crate::mion::eval::expressions::Function;
 use crate::mion::eval::values::Value;
 use crate::util::error::Error;
 use std::collections::HashMap;

@@ -1,7 +1,4 @@
 use crate::mion::eval::symbols::Symbols;
-use crate::mion::eval::expressions::Function;
-use crate::mion::eval::values::Value;
-use crate::util::error::Error;
 use crate::mion::eval::builtin::split_by_chrom::SplitByChrom;
 use crate::mion::eval::builtin::tabix::Tabix;
 

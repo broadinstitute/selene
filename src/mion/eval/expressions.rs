@@ -5,6 +5,9 @@ use crate::mion::eval::identifier::Identifier;
 use crate::mion::eval::symbols::{Symbols, VarEntry};
 use crate::mion::eval::predef;
 use std::collections::HashMap;
+use std::thread;
+use std::thread::JoinHandle;
+use std::sync::Arc;
 
 pub(crate) enum Expression {
     Identifier(Identifier),
@@ -54,11 +57,72 @@ impl Expression {
                                             callee_value)))
                 }
             }
-            Expression::Scatter(_) => { todo!() }
+            Expression::Scatter(scatter) => {
+                let scatter_identifier = &scatter.iteration.lhs;
+                let iterator_expression = &scatter.iteration.rhs;
+                let iterator_value = iterator_expression.evaluate(symbols)?;
+                if let Value::Array(array) = iterator_value {
+                    let mut children =
+                        Vec::<JoinHandle<Result<Value, Error>>>::new();
+                    for array_value in &*array {
+                        let symbols_scatter =
+                            symbols
+                                .clone().with_var_value_entry(&scatter_identifier, &array_value);
+                        let scatter_clone = scatter.clone();
+                        let child = thread::spawn(move ||{
+                            scatter_clone.expression.evaluate(&symbols_scatter)
+                        });
+                        children.push(child);
+                    }
+                    let mut values = Vec::<Value>::new();
+                    for child in children {
+                        let value = child.join()??;
+                        values.push(value);
+                    }
+                    Ok(Value::Array(Arc::new(values)))
+                } else {
+                    Err(Error::from(format!("Expected array, but got {}", iterator_value)))
+                }
+            }
             Expression::Assignment(assignment) => {
                 assignment.rhs.evaluate(symbols)
             }
             Expression::Block(_) => { todo!() }
+        }
+    }
+}
+
+impl Clone for Expression {
+    fn clone(&self) -> Self {
+        match self {
+            Expression::Identifier(identifier) => {
+                Expression::Identifier(identifier.clone())
+            }
+            Expression::Value(value) => {
+                Expression::Value(value.clone())
+            }
+            Expression::Binary(lhs, op, rhs) => {
+                Expression::Binary(lhs.clone(), *op, rhs.clone())
+            }
+            Expression::Member(expression, identifier) => {
+                Expression::Member(expression.clone(), identifier.clone())
+            }
+            Expression::Call(callee, args) => {
+                let mut args_cloned = Vec::<Assignment>::new();
+                for arg in args {
+                    args_cloned.push(arg.clone())
+                }
+                Expression::Call(callee.clone(), args.clone())
+            }
+            Expression::Scatter(scatter) => {
+                Expression::Scatter(scatter.clone())
+            }
+            Expression::Assignment(assignment) => {
+                Expression::Assignment(assignment.clone())
+            }
+            Expression::Block(block) => {
+                Expression::Block(block.clone())
+            }
         }
     }
 }
@@ -74,6 +138,12 @@ impl Scatter {
     }
 }
 
+impl Clone for Scatter {
+    fn clone(&self) -> Self {
+        Scatter::new(self.iteration.clone(), self.expression.clone())
+    }
+}
+
 pub(crate) struct Iteration {
     pub(crate) lhs: Identifier,
     pub(crate) rhs: Expression,
@@ -82,6 +152,12 @@ pub(crate) struct Iteration {
 impl Iteration {
     pub(crate) fn new(lhs: Identifier, rhs: Expression) -> Iteration {
         Iteration { lhs, rhs }
+    }
+}
+
+impl Clone for Iteration {
+    fn clone(&self) -> Self {
+        Iteration::new(self.lhs.clone(), self.rhs.clone())
     }
 }
 
@@ -96,6 +172,12 @@ impl Assignment {
     }
 }
 
+impl Clone for Assignment {
+    fn clone(&self) -> Self {
+        Assignment::new(self.lhs.clone(), self.rhs.clone())
+    }
+}
+
 pub(crate) struct Block {
     expressions: Vec<Expression>,
 }
@@ -103,6 +185,16 @@ pub(crate) struct Block {
 impl Block {
     pub(crate) fn new(expressions: Vec<Expression>) -> Block {
         Block { expressions }
+    }
+}
+
+impl Clone for Block {
+    fn clone(&self) -> Self {
+        let mut expressions_cloned = Vec::<Expression>::new();
+        for expression in &self.expressions {
+            expressions_cloned.push(expression.clone())
+        }
+        Block::new(expressions_cloned)
     }
 }
 

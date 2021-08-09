@@ -6,6 +6,7 @@ use std::num::ParseIntError;
 use bgzip::BGZFError;
 use nom::error::VerboseError;
 use nom::Err;
+use std::any::Any;
 
 pub struct SeleneError {
     message: String,
@@ -125,5 +126,11 @@ impl Display for Error {
 impl Debug for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         Display::fmt(self, f)
+    }
+}
+
+impl From<Box<dyn Any + Send>> for Error {
+    fn from(_: Box<dyn Any + Send>) -> Self {
+        Error::from("Some strange error involving something of type Box<dyn Any + Send>")
     }
 }

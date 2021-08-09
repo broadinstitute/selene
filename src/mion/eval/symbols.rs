@@ -1,20 +1,20 @@
 use crate::mion::eval::values::Value;
 use crate::mion::eval::identifier::Identifier;
-use std::rc::Rc;
 use crate::mion::eval::expressions::Function;
+use std::sync::Arc;
 
 pub(crate) struct Symbols {
-    pub(crate) var_entries: VarEntries
+    pub(crate) var_entries: VarEntries,
 }
 
 pub(crate) enum VarEntry {
     Uninitialized,
-    Value(Value)
+    Value(Value),
 }
 
 pub(crate) enum VarEntries {
     Nil,
-    Entry(Rc<VarEntries>, Identifier, VarEntry)
+    Entry(Arc<VarEntries>, Identifier, VarEntry),
 }
 
 impl Symbols {
@@ -31,7 +31,8 @@ impl Symbols {
         let var_entries = self.var_entries.with_value_entry(identifier, value);
         Symbols { var_entries }
     }
-    pub(crate) fn with_function_entry(self, function: Box<dyn Function>) -> Symbols {
+    pub(crate) fn with_function_entry(self, function: Box<dyn Function + Send + Sync>)
+                                      -> Symbols {
         let var_entries = self.var_entries.with_function_entry(function);
         Symbols { var_entries }
     }
@@ -40,7 +41,7 @@ impl Symbols {
 impl Clone for VarEntry {
     fn clone(&self) -> Self {
         match self {
-            VarEntry::Uninitialized => { VarEntry::Uninitialized}
+            VarEntry::Uninitialized => { VarEntry::Uninitialized }
             VarEntry::Value(value) => { VarEntry::Value(value.clone()) }
         }
     }
@@ -61,18 +62,18 @@ impl VarEntries {
         }
     }
     pub(crate) fn with_uninitialized_entry(self, identifier: &Identifier) -> VarEntries {
-        VarEntries::Entry(Rc::new(self), identifier.clone(),
+        VarEntries::Entry(Arc::new(self), identifier.clone(),
                           VarEntry::Uninitialized)
     }
     pub(crate) fn with_value_entry(self, identifier: &Identifier, value: &Value) -> VarEntries {
-        VarEntries::Entry(Rc::new(self), identifier.clone(),
+        VarEntries::Entry(Arc::new(self), identifier.clone(),
                           VarEntry::Value(value.clone()))
     }
-    pub(crate) fn with_function_entry(self, function: Box<dyn Function>) -> VarEntries {
+    pub(crate) fn with_function_entry(self, function: Box<dyn Function + Send + Sync>)
+                                      -> VarEntries {
         let identifier = Identifier::new(String::from(function.id()));
-        let value = Value::Function(Rc::new(function));
+        let value = Value::Function(Arc::new(function));
         self.with_value_entry(&identifier, &value)
-
     }
 }
 

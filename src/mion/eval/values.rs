@@ -1,15 +1,26 @@
 use std::fmt::{Display, Formatter};
 use crate::util::iter_util::fmt_vec;
-use std::rc::Rc;
 use crate::mion::eval::expressions::Function;
+use crate::util::error::Error;
+use std::sync::Arc;
 
 pub(crate) enum Value {
     Unit,
-    String(Rc<String>),
+    String(Arc<String>),
     Int(i64),
     Float(f64),
-    Array(Rc<Vec<Value>>),
-    Function(Rc<Box<dyn Function>>),
+    Array(Arc<Vec<Value>>),
+    Function(Arc<Box<dyn Function + Send + Sync>>),
+}
+
+impl Value {
+    pub(crate) fn as_string(&self) -> Result<String, Error> {
+        if let Value::String(string_rc) = self {
+            Ok(string_rc.as_ref().clone())
+        } else {
+            Err(Error::from(format!("Value {} is not a string value.", self)))
+        }
+    }
 }
 
 impl Clone for Value {
@@ -27,7 +38,7 @@ impl Clone for Value {
 
 impl From<&String> for Value {
     fn from(string: &String) -> Self {
-        Value::String(Rc::new(string.clone()))
+        Value::String(Arc::new(string.clone()))
     }
 }
 

@@ -2,11 +2,12 @@ use std::fmt::{Display, Formatter};
 
 #[derive(PartialEq, Eq, Hash)]
 pub(crate) struct Identifier {
-    name: String
+    name: String,
 }
 
 impl Identifier {
-    pub(crate) fn new(name: String) -> Identifier { Identifier { name }}
+    pub(crate) fn new(name: String) -> Identifier { Identifier { name } }
+    pub(crate) fn from_str(name: &str) -> Identifier { Identifier { name: String::from(name) } }
 }
 
 impl Display for Identifier {
