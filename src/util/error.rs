@@ -130,7 +130,15 @@ impl Debug for Error {
 }
 
 impl From<Box<dyn Any + Send>> for Error {
-    fn from(_: Box<dyn Any + Send>) -> Self {
-        Error::from("Some strange error involving something of type Box<dyn Any + Send>")
+    fn from(join_error: Box<dyn Any + Send>) -> Self {
+        let panic_message =
+            if let Some(string) = join_error.downcast_ref::<String>() {
+                string.as_str()
+            } else if let Some(string) = join_error.downcast_ref::<&str>() {
+                string
+            } else {
+                "(no more information)"
+            };
+        Error::from(format!("Joining panicked thread: {}", panic_message))
     }
 }

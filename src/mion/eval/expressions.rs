@@ -87,7 +87,13 @@ impl Expression {
             Expression::Assignment(assignment) => {
                 assignment.rhs.evaluate(symbols)
             }
-            Expression::Block(_) => { todo!() }
+            Expression::Block(block) => {
+                let mut value = Value::Unit;
+                for expression in &block.expressions {
+                    value = expression.evaluate(symbols)?;
+                }
+                Ok(value)
+            }
         }
     }
 }

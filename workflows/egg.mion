@@ -1,5 +1,5 @@
 chroms = split_by_chrom(
-     input_file = "/home/oliverr/lunaris/vep/test/inputs/sample_input_1e6.vcf",
+     input_file = "/home/oliverr/lunaris/vep/test/inputs/sample_input.vcf",
      output_folder = "/home/oliverr/lunaris/vep/test/tmp"
 );
 (chrom <- chroms) {

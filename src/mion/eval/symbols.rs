@@ -27,7 +27,6 @@ impl Symbols {
         Symbols { var_entries }
     }
     pub(crate) fn with_var_value_entry(self, identifier: &Identifier, value: &Value) -> Symbols {
-        println!("Initializing variable {}", identifier);
         let var_entries = self.var_entries.with_value_entry(identifier, value);
         Symbols { var_entries }
     }
