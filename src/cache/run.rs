@@ -24,7 +24,6 @@ pub(crate) fn run_cache(tabix_config: TabixConfig) -> Result<(), Error> {
         String::from_utf8(raw.clone()).ok()
     }).collect();
     let chroms_line = meta_lines::chromosome_line(chroms.as_slice());
-    println!("Chromosomes: {}", chroms_line);
     let meta_lines = vec!(chroms_line);
     let header_line = tsv::get_header_line(&mut bgzf)?;
     let regions_opt = match &input_config.regions_file_opt {

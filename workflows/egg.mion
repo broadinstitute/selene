@@ -1,5 +1,5 @@
 files_by_chrom = split_by_chrom(
-     input_file = "/home/oliverr/lunaris/vep/test/inputs/sample_input_1e6.vcf",
+     input_file = "/home/oliverr/lunaris/vep/test/inputs/sample_input_1e4.vcf",
      output_folder = "/home/oliverr/lunaris/vep/test/tmp"
 );
 cache_match_results = (file_for_chrom <- files_by_chrom) {
@@ -11,4 +11,11 @@ cache_match_results = (file_for_chrom <- files_by_chrom) {
         output_file_name = "extracted_data.tsv",
         misses_file_name = "cache_misses.vcf"
     );
-}
+};
+merge_all_files(
+    file_list = new(
+        output_file = "/home/oliverr/lunaris/vep/test/tmp/output_file.tsv",
+        misses_file = "/home/oliverr/lunaris/vep/test/tmp/misses_file.vcf"
+    ),
+    shards = cache_match_results
+);

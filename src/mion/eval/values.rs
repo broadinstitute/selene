@@ -24,6 +24,20 @@ impl Value {
             Err(Error::from(format!("Value {} is not a string value.", self)))
         }
     }
+    pub(crate) fn as_map_ref(&self) -> Result<&HashMap<Identifier, Value>, Error> {
+        if let Value::Object(map) = self {
+            Ok(map)
+        } else {
+            Err(Error::from(format!("Value {} is not an object value.", self)))
+        }
+    }
+    pub(crate) fn as_vec_ref(&self) -> Result<&Vec<Value>, Error> {
+        if let Value::Array(map_arc) = self {
+            Ok(map_arc)
+        } else {
+            Err(Error::from(format!("Value {} is not an array value.", self)))
+        }
+    }
 }
 
 impl Clone for Value {

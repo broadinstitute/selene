@@ -17,3 +17,17 @@ pub(crate) fn get_string_opt_arg(args_map: &ArgsMap, id: &str) -> Result<Option<
         Some(value) => { Ok(Some(value.as_string()?)) }
     }
 }
+
+pub(crate) fn get_object_arg<'a>(args_map: &'a ArgsMap, id: &str)
+    -> Result<&'a HashMap<Identifier, Value>, Error> {
+    let value = args_map.get(&Identifier::from_str(id))
+        .ok_or_else(|| { Error::from(format!("Missing argument {}", id)) })?;
+    value.as_map_ref()
+}
+
+pub(crate) fn get_array_arg<'a>(args_map: &'a ArgsMap, id: &str)
+                                 -> Result<&'a Vec<Value>, Error> {
+    let value = args_map.get(&Identifier::from_str(id))
+        .ok_or_else(|| { Error::from(format!("Missing argument {}", id)) })?;
+    value.as_vec_ref()
+}
