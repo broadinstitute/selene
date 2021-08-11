@@ -250,7 +250,7 @@ pub(crate) fn iteration(i: &str) -> ParseResult<Iteration> {
 pub(crate) fn assignment(i: &str) -> ParseResult<Assignment> {
     context("assignment",
             tuple((
-                identifier, whitespace, tag(symbols::ASSIGN), whitespace, sum
+                identifier, whitespace, tag(symbols::ASSIGN), whitespace, expression
             )).map(|parsed| {
                 let (lhs, _, _, _, rhs) = parsed;
                 Assignment { lhs, rhs }

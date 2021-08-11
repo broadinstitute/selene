@@ -13,7 +13,7 @@ pub(crate) struct TabixConfig {
 }
 
 pub(crate) struct TabixInputConfig {
-    pub(crate) data_file: String,
+    pub(crate) cache_file: String,
     pub(crate) index_file: String,
     pub(crate) input_file: String,
     pub(crate) regions_file_opt: Option<String>,
@@ -26,7 +26,7 @@ pub(crate) struct ScriptConfig {
 }
 
 impl TabixConfig {
-    fn new(input_config: TabixInputConfig, cache_misses_file_opt: Option<String>,
+    pub(crate) fn new(input_config: TabixInputConfig, cache_misses_file_opt: Option<String>,
            output_file_opt: Option<String>)
            -> TabixConfig {
         TabixConfig {
@@ -38,16 +38,16 @@ impl TabixConfig {
 }
 
 impl TabixInputConfig {
-    pub(crate) fn new(data_file: String, index_file_opt: Option<String>, input_file: String,
+    pub(crate) fn new(cache_file: String, index_file_opt: Option<String>, input_file: String,
                       regions_file_opt: Option<String>, col_ref: String, col_alt: String)
                       -> TabixInputConfig {
         let index_file =
             match index_file_opt {
                 Some(index_file) => index_file,
-                None => data_file.clone() + ".tbi"
+                None => cache_file.clone() + ".tbi"
             };
         TabixInputConfig {
-            data_file,
+            cache_file,
             index_file,
             input_file,
             regions_file_opt,

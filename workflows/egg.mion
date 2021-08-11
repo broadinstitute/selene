@@ -1,7 +1,14 @@
-chroms = split_by_chrom(
-     input_file = "/home/oliverr/lunaris/vep/test/inputs/sample_input.vcf",
+files_by_chrom = split_by_chrom(
+     input_file = "/home/oliverr/lunaris/vep/test/inputs/sample_input_1e6.vcf",
      output_folder = "/home/oliverr/lunaris/vep/test/tmp"
 );
-(chrom <- chroms) {
-    tabix(chrom = chrom);
+cache_match_results = (file_for_chrom <- files_by_chrom) {
+    tabix(
+        cache_file = "/home/oliverr/lunaris/vep/data/all_sites.vep.tsv.gz",
+        input_file = file_for_chrom,
+        col_ref = "Ref",
+        col_alt = "Alt",
+        output_file_name = "extracted_data.tsv",
+        misses_file_name = "cache_misses.vcf"
+    );
 }

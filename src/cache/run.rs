@@ -17,7 +17,7 @@ pub(crate) fn run_cache(tabix_config: TabixConfig) -> Result<(), Error> {
     let input_config = &tabix_config.input_config;
     let input = Input::from_file(&input_config.input_file)?;
     let mut bgzf =
-        BGZFReader::new(File::open(&input_config.data_file)?);
+        BGZFReader::new(File::open(&input_config.cache_file)?);
     let tabix =
         Tabix::from_reader(&mut File::open(&input_config.index_file)?)?;
     let chroms: Vec<String> = tabix.names.iter().filter_map(|raw| {
