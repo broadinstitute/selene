@@ -19,3 +19,4 @@ merge_all_files(
     ),
     shards = cache_match_results
 );
+

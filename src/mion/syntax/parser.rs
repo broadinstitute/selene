@@ -48,7 +48,7 @@ pub(crate) fn integer_literal(i: &str) -> ParseResult<Literal> {
 }
 
 pub(crate) fn literal(i: &str) -> ParseResult<Literal> {
-    context("literal", alt((string_literal, float_literal, integer_literal)))(i)
+    context("literal", alt((integer_literal, float_literal, string_literal)))(i)
 }
 
 pub(crate) fn comment(i: &str) -> ParseResult<()> {
@@ -287,17 +287,26 @@ pub(crate) fn scatter(i: &str) -> ParseResult<Scatter> {
 }
 
 pub(crate) fn expressions(i: &str) -> ParseResult<Vec<Expression>> {
+    println!("expressions: {}", i);
     context("expressions",
             tuple((
                 expression,
-                many0(tuple((whitespace, tag(symbols::SEMICOLON), whitespace, expression))),
-                opt(pair(whitespace, tag(symbols::SEMICOLON)))
+                whitespace,
+                tag(symbols::SEMICOLON),
+                many0(
+                    tuple((
+                        whitespace,
+                        expression,
+                        whitespace,
+                        tag(symbols::SEMICOLON)
+                    ))
+                )
             )).map(|parsed| {
-                let (expression0, more_parts, _) = parsed;
-                let mut expressions = vec!(expression0);
-                for part in more_parts {
-                    let (_, _, _, expression) = part;
-                    expressions.push(expression);
+                let mut expressions = Vec::<Expression>::new();
+                let (expression0, _, _, parsed_more) = parsed;
+                expressions.push(expression0);
+                for (_, expression, _, _) in parsed_more {
+                    expressions.push(expression)
                 }
                 expressions
             }),
@@ -319,5 +328,5 @@ pub(crate) fn script(i: &str) -> ParseResult<Script> {
 }
 
 pub(crate) fn parse_script(string: &str) -> Result<Script, Error> {
-    Ok(script(string)?.1)
+    Ok(script(string.trim())?.1)
 }

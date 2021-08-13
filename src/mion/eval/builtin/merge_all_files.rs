@@ -4,7 +4,7 @@ use crate::mion::eval::identifier::Identifier;
 use crate::mion::eval::values::Value;
 use crate::util::error::Error;
 use crate::mion::eval::builtin::utils::{get_object_arg, get_array_arg};
-use std::io::{BufWriter, Write, BufReader, Read, BufRead};
+use std::io::{BufWriter, Write, BufReader, BufRead};
 use std::fs::File;
 
 pub(crate) struct MergeAllFiles {}
@@ -20,7 +20,7 @@ struct Writers {
 fn append_to_writer(input_file_name: &str, writer: &mut BufWriter<File>,
                     skip_header: bool)
     -> Result<(), Error> {
-    let mut reader = BufReader::new(File::open(input_file_name)?);
+    let reader = BufReader::new(File::open(input_file_name)?);
     for line_res in reader.lines() {
         let line = line_res?;
         if !(skip_header && line.starts_with('#')) {

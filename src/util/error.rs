@@ -98,7 +98,9 @@ impl From<BGZFError> for Error {
 }
 
 impl From<nom::Err<VerboseError<&str>>> for Error {
-    fn from(nom_error: Err<VerboseError<&str>>) -> Self { Error::Nom(nom_error.to_string()) }
+    fn from(nom_error: Err<VerboseError<&str>>) -> Self {
+        Error::Nom(format!("{}", nom_error))
+    }
 }
 
 impl Display for SeleneError {
