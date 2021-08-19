@@ -9,6 +9,7 @@ mod mion;
 mod tabix;
 mod cache;
 mod script;
+mod tools;
 
 extern crate nom;
 

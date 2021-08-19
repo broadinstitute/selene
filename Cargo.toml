@@ -14,3 +14,22 @@ license = "BSD-3-Clause"
 clap = "2.33.3"
 bgzip = "0.2.1"
 nom = "6.2.1"
+
+[features]
+linux_installation = []
+
+[package.metadata.deb]
+maintainer = "Oliver Ruebenacker <oliverr@broadisntitute.org>"
+copyright = "2021, Broad Institute of"
+license-file = ["LICENSE", "0"]
+extended-description = """\
+Genomic analysis workflow toolkit"""
+depends = "$auto"
+section = "science"
+priority = "optional"
+features = ["linux_installation"]
+assets = [
+    ["target/release/selene", "usr/bin/", "755"],
+    ["README.md", "usr/share/doc/selene/README.md", "644"],
+    ["assets/bash/vep_wrapper.sh", "usr/share/selene/bash/vep_wrapper.sh", "755"],
+]
