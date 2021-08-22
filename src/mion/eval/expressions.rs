@@ -20,6 +20,10 @@ pub(crate) enum Expression {
     Block(Box<Block>),
 }
 
+fn err_no_such_member(value: &Value, member: &Identifier) -> Result<Value, Error> {
+    Err(Error::from(format!("{} does not have a member {}.", value, member)))
+}
+
 impl Expression {
     pub(crate) fn evaluate(&self, symbols: &Symbols) -> Result<Value, Error> {
         match self {
@@ -41,7 +45,25 @@ impl Expression {
             }
             Expression::Value(value) => { Ok(value.clone()) }
             Expression::Binary(_, _, _) => { todo!() }
-            Expression::Member(_, _) => { todo!() }
+            Expression::Member(expression, member) => {
+                let value = expression.evaluate(symbols)?;
+                match &value {
+                    Value::Unit | Value::String(_) | Value::Int(_) | Value::Float(_) |
+                    Value::Array(_) | Value::Function(_) => {
+                        err_no_such_member(&value, member)
+                    }
+                    Value::Object(members) => {
+                        match members.get(member) {
+                            None => {
+                                err_no_such_member(&value, member)
+                            }
+                            Some(value) => {
+                                Ok(value.clone())
+                            }
+                        }
+                    }
+                }
+            }
             Expression::Call(callee, args) => {
                 let callee_value = callee.evaluate(symbols)?;
                 if let Value::Function(function) = callee_value {
@@ -88,11 +110,7 @@ impl Expression {
                 assignment.rhs.evaluate(symbols)
             }
             Expression::Block(block) => {
-                let mut value = Value::Unit;
-                for expression in &block.expressions {
-                    value = expression.evaluate(symbols)?;
-                }
-                Ok(value)
+                evaluate_expressions(&block.expressions, &symbols)
             }
         }
     }

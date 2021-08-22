@@ -17,8 +17,8 @@ pub(crate) struct VepSetupArgs {
 
 pub(crate) struct VepArgs {
     input_file: String,
-    output_file: String,
-    warnings_file: String,
+    pub(crate) output_file: String,
+    pub(crate) warnings_file: String,
     vep_setup_args: VepSetupArgs
 }
 
