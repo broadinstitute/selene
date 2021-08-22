@@ -12,15 +12,27 @@ cache_match_results = (file_for_chrom <- files_by_chrom) {
         output_file = replace_file_name(path = file_for_chrom, file_name = "extracted_data.tsv"),
         misses_file = replace_file_name(path = file_for_chrom, file_name = "cache_misses.vcf")
     );
+    vep_outputs = vep(
+        vep_cmd = "",
+        input_file = "",
+        fasta_file = "",
+        cache_dir = "",
+        plugins_dir = "",
+        dbnsfp = "",
+        output_file = "",
+        warnings_file = ""
+    );
     new(
         cache_data_file = tabix_outputs.output_file,
-        cache_misses_file = tabix_outputs.misses_file
+        cache_misses_file = tabix_outputs.misses_file,
+        vep_output_file = vep_outputs.output_file
     );
 };
 merge_all_files(
     file_list = new(
         cache_data_file = "/home/oliverr/lunaris/vep/test/tmp/cache_data.tsv",
-        cache_misses_file = "/home/oliverr/lunaris/vep/test/tmp/cache_misses.vcf"
+        cache_misses_file = "/home/oliverr/lunaris/vep/test/tmp/cache_misses.vcf",
+        vep_output_file = ""
     ),
     shards = cache_match_results
 );
