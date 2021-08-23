@@ -1,10 +1,10 @@
 use crate::util::error::Error;
 use crate::util::sh_util;
 
-#[cfg(linux_installation)]
+#[cfg(feature = "linux_installation")]
 const VEP_WRAPPER_PATH: &str = "/usr/share/selene/bash/vep_wrapper.sh";
 
-#[cfg(not(linux_installation))]
+#[cfg(not(feature = "linux_installation"))]
 const VEP_WRAPPER_PATH: &str = "assets/bash/vep_wrapper.sh";
 
 pub(crate) struct VepSetupArgs {
