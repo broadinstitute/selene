@@ -1,4 +1,4 @@
-use std::fs::File;
+use fs_err::File;
 
 use bgzip::BGZFReader;
 use bgzip::tabix::Tabix;

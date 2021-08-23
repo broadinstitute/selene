@@ -5,7 +5,7 @@ use crate::mion::eval::values::Value;
 use crate::util::error::Error;
 use crate::mion::eval::builtin::utils::{get_object_arg, get_array_arg};
 use std::io::{BufWriter, Write, BufReader, BufRead};
-use std::fs::File;
+use fs_err::File;
 
 pub(crate) struct MergeAllFiles {}
 

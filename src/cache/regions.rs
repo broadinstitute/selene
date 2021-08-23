@@ -1,6 +1,6 @@
 use std::collections::{HashMap, BTreeSet};
 use crate::util::error::Error;
-use std::fs::File;
+use fs_err::File;
 use std::io::{BufReader, BufRead};
 use crate::variant::Variant;
 
@@ -155,7 +155,7 @@ mod tests {
     use crate::cache::regions::Regions;
     use crate::variant::Variant;
     use std::io::{BufWriter, Write};
-    use std::fs::File;
+    use fs_err::File;
 
     fn write_regions_line(writer: &mut BufWriter<File>, id: &str, chrom: &str, begin: u32,
                           end: u32) -> Result<(), Error> {

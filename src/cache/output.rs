@@ -1,4 +1,4 @@
-use std::fs::File;
+use fs_err::File;
 use crate::util::error::Error;
 use std::io::{Write, BufWriter};
 use crate::cache::meta_lines;

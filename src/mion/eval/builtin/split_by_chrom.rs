@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use crate::mion::eval::identifier::Identifier;
 use crate::mion::eval::builtin::utils::get_string_arg;
 use std::io::{BufReader, BufRead, BufWriter, Write};
-use std::fs::{File, create_dir};
+use fs_err::{File, create_dir};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 

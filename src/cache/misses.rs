@@ -1,6 +1,6 @@
 use std::io::{Write, BufWriter};
 use crate::util::error::Error;
-use std::fs::File;
+use fs_err::File;
 use crate::variant::Variant;
 use crate::cache::meta_lines;
 

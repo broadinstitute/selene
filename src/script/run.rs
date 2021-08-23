@@ -1,7 +1,7 @@
 use crate::Error;
 use crate::config::ScriptConfig;
 use crate::mion::syntax::parser;
-use std::fs;
+use fs_err as fs;
 
 pub(crate) fn run_script(script_config: ScriptConfig) -> Result<(), Error> {
     let script_string = fs::read_to_string(&script_config.script_file)?;

@@ -1,7 +1,7 @@
 use std::io::{Read, BufReader, BufRead};
 use crate::variant::Variant;
 use crate::util::error::Error;
-use std::fs::File;
+use fs_err::File;
 use crate::variant;
 use crate::util::error;
 
