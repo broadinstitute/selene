@@ -21,7 +21,7 @@ pub(crate) fn run_cache(tabix_config: TabixConfig) -> Result<(), Error> {
     let tabix =
         Tabix::from_reader(&mut File::open(&input_config.index_file)?)?;
     let chroms: Vec<String> = tabix.names.iter().filter_map(|raw| {
-        String::from_utf8(raw.clone()).ok()
+        String::from_utf8(raw[0..(raw.len() - 1)].to_owned()).ok()
     }).collect();
     let vcf_version_line = String::from("##fileformat=VCFv4.0");
     let mut meta_lines = vec!(vcf_version_line);
