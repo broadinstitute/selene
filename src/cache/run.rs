@@ -23,7 +23,7 @@ pub(crate) fn run_cache(tabix_config: TabixConfig) -> Result<(), Error> {
     let chroms: Vec<String> = tabix.names.iter().filter_map(|raw| {
         String::from_utf8(raw.clone()).ok()
     }).collect();
-    let vcf_version_line = String::from("##fileformat=VCFv4.3");
+    let vcf_version_line = String::from("##fileformat=VCFv4.0");
     let mut meta_lines = vec!(vcf_version_line);
     meta_lines.append(&mut meta_lines::chromosome_lines(chroms.as_slice()));
     let header_line = tsv::get_header_line(&mut bgzf)?;
