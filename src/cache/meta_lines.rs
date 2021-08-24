@@ -1,20 +1,12 @@
 use std::io::Write;
 use crate::util::error::Error;
 
-pub(crate) fn chromosome_line(chromosomes: &[String]) -> String {
-    let mut line = String::from("##CHROMOSOMES=<");
-    let mut is_first = true;
+pub(crate) fn chromosome_lines(chromosomes: &[String]) -> Vec<String> {
+    let mut lines = Vec::<String>::new();
     for chromosome in chromosomes {
-        if is_first {
-            line.push_str(chromosome);
-            is_first = false;
-        } else {
-            line.push(',');
-            line.push_str(chromosome);
-        }
+        lines.push(format!("##contig=<ID={}>", chromosome));
     }
-    line.push('>');
-    line
+    lines
 }
 
 pub(crate) fn write_meta_lines(write: &mut impl Write, meta_lines: &[String])
