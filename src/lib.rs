@@ -4,7 +4,6 @@ use crate::util::error::Error;
 mod util;
 mod config;
 mod variant;
-mod tsv;
 mod mion;
 mod tabix;
 mod cache;

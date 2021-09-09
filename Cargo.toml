@@ -20,7 +20,7 @@ fs-err = "2.6.0"
 linux_installation = []
 
 [package.metadata.deb]
-maintainer = "Oliver Ruebenacker <oliverr@broadisntitute.org>"
+maintainer = "Oliver Ruebenacker <oliverr@broadinstitute.org>"
 copyright = "2021, Broad Institute of"
 license-file = ["LICENSE", "0"]
 extended-description = """\

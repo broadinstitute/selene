@@ -19,20 +19,29 @@ cache_match_results = (file_for_chrom <- files_by_chrom) {
         cache_dir = "",
         plugins_dir = "",
         dbnsfp = "",
-        output_file = "",
+        output_file = replace_file_name(path = file_for_chrom, file_name = "vep_output.tsv"),
         warnings_file = ""
     );
+    vep_result_pick = pick_vep_results(
+        input_file = vep_outputs.output_file,
+        output_file = replace_file_name(path = file_for_chrom, file_name = "vep_output_picked.tsv")
+    );
+    join_outputs = join(
+        input_file1 = tabix_outputs.output_file,
+        id1 = "",
+        input_file2 = vep_result_pick.output_file,
+        id2 = "",
+        output_file = ""
+    );
     new(
-        cache_data_file = tabix_outputs.output_file,
         cache_misses_file = tabix_outputs.misses_file,
-        vep_output_file = vep_outputs.output_file
+        join_outputs = join_outputs.output_file
     );
 };
 merge_all_files(
     file_list = new(
-        cache_data_file = "/home/oliverr/lunaris/vep/test/tmp/cache_data.tsv",
         cache_misses_file = "/home/oliverr/lunaris/vep/test/tmp/cache_misses.vcf",
-        vep_output_file = ""
+        join_output_file = "/home/oliverr/lunaris/vep/test/tmp/joined_data.tsv"
     ),
     shards = cache_match_results
 );

@@ -22,14 +22,14 @@ impl Function for Tabix {
     fn id(&self) -> &str { "tabix" }
 
     fn call(&self, args_map: HashMap<Identifier, Value>) -> Result<Value, Error> {
-        let cache_file = get_string_arg(&args_map, &CACHE_FILE_ARG)?;
-        let index_file_opt = get_string_opt_arg(&args_map, &INDEX_FILE_ARG)?;
-        let input_file = get_string_arg(&args_map, &INPUT_FILE_ARG)?;
-        let regions_file_opt = get_string_opt_arg(&args_map, &REGIONS_FILE_ARG)?;
-        let col_ref = get_string_arg(&args_map, &COL_REF_ARG)?;
-        let col_alt = get_string_arg(&args_map, &COL_ALT_ARG)?;
-        let output_file = get_string_arg(&args_map, &OUTPUT_FILE_ARG)?;
-        let misses_file = get_string_arg(&args_map, &MISSES_FILE_ARG)?;
+        let cache_file = get_string_arg(&args_map, CACHE_FILE_ARG)?;
+        let index_file_opt = get_string_opt_arg(&args_map, INDEX_FILE_ARG)?;
+        let input_file = get_string_arg(&args_map, INPUT_FILE_ARG)?;
+        let regions_file_opt = get_string_opt_arg(&args_map, REGIONS_FILE_ARG)?;
+        let col_ref = get_string_arg(&args_map, COL_REF_ARG)?;
+        let col_alt = get_string_arg(&args_map, COL_ALT_ARG)?;
+        let output_file = get_string_arg(&args_map, OUTPUT_FILE_ARG)?;
+        let misses_file = get_string_arg(&args_map, MISSES_FILE_ARG)?;
         let object = ObjectBuilder::new()
             .with_string("output_file", &output_file)
             .with_string("misses_file", &misses_file)

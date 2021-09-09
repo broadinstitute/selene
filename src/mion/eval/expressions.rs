@@ -89,7 +89,7 @@ impl Expression {
                     for array_value in &*array {
                         let symbols_scatter =
                             symbols
-                                .clone().with_var_value_entry(&scatter_identifier, &array_value);
+                                .clone().with_var_value_entry(scatter_identifier, array_value);
                         let scatter_clone = scatter.clone();
                         let child = thread::spawn(move ||{
                             scatter_clone.expression.evaluate(&symbols_scatter)
@@ -110,7 +110,7 @@ impl Expression {
                 assignment.rhs.evaluate(symbols)
             }
             Expression::Block(block) => {
-                evaluate_expressions(&block.expressions, &symbols)
+                evaluate_expressions(&block.expressions, symbols)
             }
         }
     }
@@ -247,7 +247,7 @@ fn evaluate_expressions(expressions: &[Expression], symbols: &Symbols) -> Result
         value = expression.evaluate(&symbols_local)?;
         if let Expression::Assignment(assignment) = expression {
             let lhs = &assignment.lhs;
-            symbols_local = symbols_local.with_var_value_entry(&lhs, &value)
+            symbols_local = symbols_local.with_var_value_entry(lhs, &value)
         }
     }
     Ok(value)

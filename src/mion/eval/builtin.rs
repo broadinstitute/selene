@@ -5,3 +5,4 @@ pub(crate) mod merge_all_files;
 pub(crate) mod new;
 pub(crate) mod vep;
 pub(crate) mod replace_file_name;
+pub(crate) mod pick_vep_results;

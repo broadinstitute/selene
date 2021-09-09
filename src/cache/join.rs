@@ -8,7 +8,7 @@ use crate::cache::misses::MissesFile;
 use crate::variant::{ICols, Variant};
 use crate::variant;
 use crate::tabix::tabix_index;
-use crate::tsv::IAlleleCols;
+use crate::tabix::tsv::IAlleleCols;
 use crate::cache::regions::Regions;
 
 struct SequenceMeta {

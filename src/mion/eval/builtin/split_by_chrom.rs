@@ -17,9 +17,9 @@ const OUTPUT_FOLDER_ARG: &str = "output_folder";
 impl Function for SplitByChrom {
     fn id(&self) -> &str { "split_by_chrom" }
     fn call(&self, args_map: HashMap<Identifier, Value>) -> Result<Value, Error> {
-        let input_file_string = get_string_arg(&args_map, &INPUT_FILE_ARG)?;
+        let input_file_string = get_string_arg(&args_map, INPUT_FILE_ARG)?;
         let input_file = Path::new(&input_file_string);
-        let output_folder_string = get_string_arg(&args_map, &OUTPUT_FOLDER_ARG)?;
+        let output_folder_string = get_string_arg(&args_map, OUTPUT_FOLDER_ARG)?;
         let output_folder = Path::new(&output_folder_string);
         let reader = BufReader::new(File::open(input_file)?);
         let mut header_lines = Vec::<String>::new();

@@ -85,7 +85,7 @@ impl RegionsBuffer {
     pub fn as_regions(&self) -> Regions {
         let mut by_chrom: HashMap::<String, Vec<Interval>> = HashMap::new();
         for (chrom, interval_set) in &self.by_chrom {
-            let intervals = RegionsBuffer::consolidate_intervals(&interval_set);
+            let intervals = RegionsBuffer::consolidate_intervals(interval_set);
             by_chrom.insert(chrom.clone(), intervals);
         }
         Regions { by_chrom }

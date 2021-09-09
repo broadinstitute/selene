@@ -45,10 +45,10 @@ impl Writers {
         Ok(Writers::new(output_files))
     }
     fn append_file(&mut self, identifier: &Identifier, file_name: &str) -> Result<(), Error> {
-        match self.writers.get_mut(&identifier) {
+        match self.writers.get_mut(identifier) {
             None => {
                 let output_file_name =
-                    self.output_files.get(&identifier).ok_or_else(|| {
+                    self.output_files.get(identifier).ok_or_else(|| {
                         Error::from(format!("No file name provided for output file {}",
                                             identifier))
                     })?;
@@ -68,8 +68,8 @@ impl Writers {
 impl Function for MergeAllFiles {
     fn id(&self) -> &str { "merge_all_files" }
     fn call(&self, args_map: HashMap<Identifier, Value>) -> Result<Value, Error> {
-        let file_list = get_object_arg(&args_map, &FILE_LIST_ARG)?;
-        let shards = get_array_arg(&args_map, &SHARDS_ARG)?;
+        let file_list = get_object_arg(&args_map, FILE_LIST_ARG)?;
+        let shards = get_array_arg(&args_map, SHARDS_ARG)?;
         let mut writers = Writers::from_values(file_list)?;
         for shard in shards {
             let shard_map = shard.as_map_ref()?;

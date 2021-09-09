@@ -9,8 +9,8 @@ use crate::cache::misses::MissesFile;
 use crate::cache::output::Output;
 use crate::cache::regions::Regions;
 use crate::config::TabixConfig;
-use crate::tsv;
-use crate::tsv::IAlleleCols;
+use crate::tabix::tsv;
+use crate::tabix::tsv::IAlleleCols;
 use crate::util::error::Error;
 
 pub(crate) fn run_cache(tabix_config: TabixConfig) -> Result<(), Error> {

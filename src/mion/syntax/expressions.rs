@@ -33,9 +33,9 @@ fn compile_expressions(expressions: &[Expression], symbols: &Symbols)
             let identifier = &assignment.lhs;
             let rhs = &assignment.rhs;
             if let expressions::Expression::Value(value) = rhs {
-                symbols_local = symbols_local.with_var_value_entry(&identifier, &value);
+                symbols_local = symbols_local.with_var_value_entry(identifier, value);
             } else {
-                symbols_local = symbols_local.with_var_uninitialized_entry(&identifier);
+                symbols_local = symbols_local.with_var_uninitialized_entry(identifier);
             }
         }
         eval_expressions.push(eval_expression);

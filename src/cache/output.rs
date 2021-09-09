@@ -17,15 +17,15 @@ impl Output {
                             -> Result<Output, Error> {
         let mut write: Box<dyn Write> =
             Box::new(BufWriter::new(File::create(out_file)?));
-        meta_lines::write_meta_lines(&mut write, &meta_lines)?;
-        write_header_line(&mut write, &header_line)?;
+        meta_lines::write_meta_lines(&mut write, meta_lines)?;
+        write_header_line(&mut write, header_line)?;
         Ok(Output { write })
     }
     pub(crate) fn from_stdout(header_line: &str, meta_lines: &[String])
                               -> Result<Output, Error> {
         let mut write: Box<dyn Write> = Box::new(std::io::stdout());
-        meta_lines::write_meta_lines(&mut write, &meta_lines)?;
-        write_header_line(&mut write, &header_line)?;
+        meta_lines::write_meta_lines(&mut write, meta_lines)?;
+        write_header_line(&mut write, header_line)?;
         Ok(Output { write })
     }
     pub(crate) fn write_line(&mut self, line: String) -> Result<(), Error> {

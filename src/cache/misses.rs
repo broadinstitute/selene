@@ -17,14 +17,14 @@ impl MissesFile {
     pub(crate) fn from_file(out_file: String, meta_lines: &[String]) -> Result<MissesFile, Error> {
         let mut write: BufWriter<Box<dyn Write>> =
             BufWriter::new(Box::new(File::create(out_file)?));
-        meta_lines::write_meta_lines(&mut write, &meta_lines)?;
+        meta_lines::write_meta_lines(&mut write, meta_lines)?;
         MissesFile::write_header(&mut write)?;
         Ok(MissesFile { write })
     }
     pub(crate) fn from_stdout(meta_lines: &[String]) -> Result<MissesFile, Error> {
         let mut write: BufWriter<Box<dyn Write>> =
             BufWriter::new(Box::new(std::io::stdout()));
-        meta_lines::write_meta_lines(&mut write, &meta_lines)?;
+        meta_lines::write_meta_lines(&mut write, meta_lines)?;
         MissesFile::write_header(&mut write)?;
         Ok(MissesFile { write })
     }

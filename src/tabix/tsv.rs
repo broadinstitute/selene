@@ -13,7 +13,7 @@ impl IAlleleCols {
     pub(crate) fn parse(header_line: &str, col_ref: &str, col_alt: &str)
                         -> Result<IAlleleCols, Error> {
         let stripped_line =
-            header_line.strip_prefix('#').unwrap_or(&header_line);
+            header_line.strip_prefix('#').unwrap_or(header_line);
         let mut i_col_ref_opt: Option<usize> = None;
         let mut i_col_alt_opt: Option<usize> = None;
         let mut parts = stripped_line.split('\t');
