@@ -4,6 +4,7 @@ use crate::mion::eval::identifier::Identifier;
 use crate::mion::eval::values::{Value, ObjectBuilder};
 use crate::util::error::Error;
 use crate::mion::eval::builtin::utils::get_string_arg;
+use crate::tools::vep_output_pick::pick_records;
 
 pub(crate) struct PickVepResults {}
 
@@ -20,7 +21,7 @@ impl Function for PickVepResults {
             .with_string("input_file", &input_file)
             .with_string("output_file", &output_file)
             .into_object();
-        todo!();
+        pick_records(input_file, output_file)?;
         Ok(object)
     }
 }
