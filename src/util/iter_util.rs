@@ -1,17 +1,10 @@
 use std::fmt::{Display, Formatter};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 pub(crate) fn fmt_vec<T: Display>(pre: &str, vec: &[T], post: &str, f: &mut Formatter<'_>)
                                   -> std::fmt::Result {
     pre.fmt(f)?;
-    let mut iter = vec.iter();
-    if let Some(value0) = iter.next() {
-        value0.fmt(f)?;
-        for value in iter {
-            ", ".fmt(f)?;
-            value.fmt(f)?;
-        }
-    }
+    fmt_items(f, &mut vec.iter())?;
     post.fmt(f)
 }
 
@@ -35,4 +28,23 @@ pub(crate) fn fmt_map<K: Display, V: Display>(pre: &str, map: &HashMap<K, V>,
         }
     }
     post.fmt(f)
+}
+
+pub(crate) fn fmt_set<V: Display>(pre: &str, set: &HashSet<V>, post: &str, f: &mut Formatter<'_>)
+-> std::fmt::Result {
+    pre.fmt(f)?;
+    fmt_items(f, &mut set.iter())?;
+    post.fmt(f)
+
+}
+
+fn fmt_items<V: Display>(f: &mut Formatter, iter: &mut dyn Iterator<Item=V>) -> std::fmt::Result {
+    if let Some(item) = iter.next() {
+        item.fmt(f)?;
+        for item in iter {
+            ", ".fmt(f)?;
+            item.fmt(f)?;
+        }
+    }
+    Ok(())
 }

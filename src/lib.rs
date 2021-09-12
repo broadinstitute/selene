@@ -9,6 +9,7 @@ mod tabix;
 mod cache;
 mod script;
 mod tools;
+mod tsv;
 
 extern crate nom;
 
