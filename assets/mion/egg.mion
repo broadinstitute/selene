@@ -26,7 +26,7 @@ cache_match_results = (file_for_chrom <- files_by_chrom) {
         input_file = vep_outputs.output_file,
         output_file = replace_file_name(path = file_for_chrom, file_name = "vep_output_picked.tsv")
     );
-    join_outputs = join(
+    join_outputs = join_files(
         input_file1 = tabix_outputs.output_file,
         id1 = "",
         input_file2 = vep_result_pick.output_file,
