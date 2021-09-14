@@ -10,7 +10,6 @@ struct ColIndices {
 
 struct InputFile {
     i_cols: ColIndices,
-    is_exhausted: bool,
     lines: Lines<BufReader<File>>,
 }
 
@@ -54,8 +53,7 @@ impl InputFile {
                         let i_id = i_cols_vec[0];
                         let i_pos = i_cols_vec[1];
                         let i_cols = ColIndices { i_id, i_pos };
-                        let is_exhausted = false;
-                        return Ok(InputFile { i_cols, is_exhausted, lines });
+                        return Ok(InputFile { i_cols, lines });
                     } else {
                         return Err(Error::from(
                             format!("Unexpected end of '{}' while parsing header lines",
@@ -81,7 +79,6 @@ impl Iterator for InputFile {
     fn next(&mut self) -> Option<Self::Item> {
         match self.lines.next() {
             None => {
-                self.is_exhausted = true;
                 None
             }
             Some(Err(error)) => {
@@ -146,7 +143,7 @@ impl Cache {
     fn records_match(record1: &IdPosLine, record2: &IdPosLine) -> bool {
         record1.pos == record2.pos && record1.id == record2.id
     }
-    fn match_last_against(&mut self, o_cache: &mut Cache) -> Option<String> {
+    fn match_last_against(&mut self, o_cache: &mut Cache) -> Option<(IdPosLine, IdPosLine)> {
         if let Some(last_record) = self.records.last() {
             let mut i_o_record_opt: Option<usize> = None;
             for (i, o_record) in o_cache.records.iter().enumerate() {
@@ -155,9 +152,29 @@ impl Cache {
                 }
             }
             if let Some(i_o_record) = i_o_record_opt {
-                todo!()
+                let last_record = self.remove_record(self.records.len() - 1);
+                let matching_o_record = o_cache.remove_record(i_o_record);
+                Some((last_record, matching_o_record))
+            } else {
+                None
             }
+        } else {
+            None
         }
+    }
+}
+
+struct OutputFile {
+
+}
+
+impl OutputFile {
+    fn new(_output_file: &str) -> Result<OutputFile, Error> {
+        todo!()
+    }
+    fn write_joined(&mut self, record1: IdPosLine, record2: IdPosLine) -> Result<(), Error> {
+        let _todo = record1.line;
+        let _todo = record2.line;
         todo!()
     }
 }
@@ -168,10 +185,16 @@ pub(crate) fn join(input_file_config1: &InputFileConfig, input_file_config2: &In
     let input_file1 = InputFile::open(input_file_config1)?;
     let input_file2 = InputFile::open(input_file_config2)?;
     let mut cache1 = Cache::new(input_file1);
-    let cache2 = Cache::new(input_file2);
+    let mut cache2 = Cache::new(input_file2);
+    let mut output_file = OutputFile::new(output_file)?;
     while !cache1.is_exhausted() || !cache2.is_exhausted() {
         if cache1.pos_max <= cache2.pos_max {
             cache1.load_next()?;
+            let matching_records_opt = cache1.match_last_against(&mut cache2);
+            if let Some((record1, record2)) = matching_records_opt {
+                output_file.write_joined(record1, record2)?;
+                todo!( )
+            };
         }
         todo!()
     }
