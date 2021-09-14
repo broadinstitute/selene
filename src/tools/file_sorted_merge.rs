@@ -1,5 +1,7 @@
 use crate::util::error::Error;
-use crate::tsv::pos_line::{PosLine, InputFile, InputFileConfig};
+use crate::tsv::pos_line::{PosLine, InputFile, InputFileConfig, HeadersAndInputFile};
+use fs_err::File;
+use std::io::{BufWriter, Write};
 
 struct Cache {
     input_file: InputFile,
@@ -28,24 +30,49 @@ impl Cache {
     }
 }
 
-struct OutputFile {}
+struct OutputFile {
+    writer: BufWriter<File>
+}
 
 impl OutputFile {
-    fn new(_output_file: &str) -> Result<OutputFile, Error> {
-        todo!()
+    fn new(output_file: &str, header_lines: &[String]) -> Result<OutputFile, Error> {
+        let mut writer = BufWriter::new(File::create(output_file)?);
+        for header_line in header_lines {
+            writeln!(writer, "{}\n", header_line)?;
+        }
+        Ok(OutputFile { writer })
+    }
+    fn write(&mut self, line: &str) -> Result<(), Error> {
+        writeln!(self.writer, "{}\n", line)?;
+        Ok(())
     }
 }
+
+const POS_MAX: u32 = u32::MAX;
 
 pub(crate) fn merge(input_file_config1: &InputFileConfig, input_file_config2: &InputFileConfig,
                     output_file: &str)
                     -> Result<(), Error> {
-    let input_file1 = InputFile::open(input_file_config1)?;
-    let input_file2 = InputFile::open(input_file_config2)?;
+    let HeadersAndInputFile { header_lines: header_lines1,
+        input_file: input_file1} = InputFile::open(input_file_config1)?;
+    let HeadersAndInputFile { input_file: input_file2, ..}
+        = InputFile::open(input_file_config2)?;
     let mut cache1 = Cache::new(input_file1)?;
     let mut cache2 = Cache::new(input_file2)?;
-    let mut output_file = OutputFile::new(output_file)?;
+    let mut output_file = OutputFile::new(output_file, &header_lines1)?;
     while !cache1.is_exhausted() || !cache2.is_exhausted() {
-        todo!()
+        let pos1 = cache1.get_pos().unwrap_or(POS_MAX);
+        let pos2 = cache2.get_pos().unwrap_or(POS_MAX);
+        if pos1 <= pos2 {
+            if let Some(record) = cache1.remove_record()? {
+                output_file.write(&record.line)?
+            }
+        }
+        if pos1 <= pos2 {
+            if let Some(record) = cache2.remove_record()? {
+                output_file.write(&record.line)?
+            }
+        }
     }
     Ok(())
 }

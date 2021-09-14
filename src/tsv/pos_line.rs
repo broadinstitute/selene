@@ -12,6 +12,11 @@ pub(crate) struct InputFile {
     lines: Lines<BufReader<File>>,
 }
 
+pub(crate) struct HeadersAndInputFile {
+    pub(crate) header_lines: Vec<String>,
+    pub(crate) input_file: InputFile
+}
+
 pub(crate) struct PosLine {
     pub(crate) pos: u32,
     pub(crate) line: String,
@@ -29,7 +34,8 @@ impl InputFileConfig {
 }
 
 impl InputFile {
-    pub(crate) fn open(config: &InputFileConfig) -> Result<InputFile, Error> {
+    pub(crate) fn open(config: &InputFileConfig) -> Result<HeadersAndInputFile, Error> {
+        let mut header_lines = Vec::<String>::new();
         let mut lines =
             BufReader::new(File::open(&config.file)?).lines();
         loop {
@@ -43,13 +49,16 @@ impl InputFile {
                 Some(lines_res) => {
                     let line = lines_res?;
                     if line.starts_with("##") {
+                        header_lines.push(line);
                         continue;
                     } else if line.starts_with('#') {
                         let cols = vec!(config.pos_col.as_str());
                         let i_cols_vec = col_indices_from_header_line(&line, &cols)?;
                         let i_pos = i_cols_vec[0];
                         let i_cols = ColIndices { i_pos };
-                        return Ok(InputFile { i_cols, lines });
+                        let input_file = InputFile { i_cols, lines };
+                        header_lines.push(line);
+                        return Ok(HeadersAndInputFile { header_lines, input_file });
                     } else {
                         return Err(Error::from(
                             format!("Unexpected end of '{}' while parsing header lines",
