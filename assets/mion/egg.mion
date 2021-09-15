@@ -31,16 +31,18 @@ cache_match_results = (file_for_chrom <- files_by_chrom) {
         id1 = "",
         input_file2 = vep_result_pick.output_file,
         id2 = "",
-        output_file = ""
+        output_file = replace_file_name(path = file_for_chrom, file_name = "merged.tsv")
     );
     new(
         cache_misses_file = tabix_outputs.misses_file,
+        vep_pick_result = vep_result_pick.output_file,
         merge_output_file = merge_outputs.output_file
     );
 };
 merge_all_files(
     file_list = new(
         cache_misses_file = "/home/oliverr/lunaris/vep/test/tmp/cache_misses.vcf",
+        vep_pick_result = "/home/oliverr/lunaris/vep/test/tmp/vep_result_pick.tsv",
         merge_output_file = "/home/oliverr/lunaris/vep/test/tmp/merged_data.tsv"
     ),
     shards = cache_match_results
