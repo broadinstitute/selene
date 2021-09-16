@@ -14,7 +14,7 @@ pub(crate) struct InputFile {
 
 pub(crate) struct HeadersAndInputFile {
     pub(crate) header_lines: Vec<String>,
-    pub(crate) input_file: InputFile
+    pub(crate) input_file: InputFile,
 }
 
 pub(crate) struct PosLine {
@@ -71,9 +71,29 @@ impl InputFile {
     }
 }
 
+fn pos_parse_error(pos_str: &str) -> Error {
+    Error::from(format!("Cannot parse {} as a position", pos_str))
+}
+
+fn parse_pos(pos_str: &str) -> Result<u32, Error> {
+    let pos_str_no_chrom =
+        if pos_str.contains(':') {
+            pos_str.split(':').nth(1).ok_or_else(|| { pos_parse_error(pos_str) })?
+        } else {
+            pos_str
+        };
+    let pos_not_range =
+        if pos_str_no_chrom.contains('-') {
+            pos_str_no_chrom.split('-').next().ok_or_else(|| { pos_parse_error(pos_str) })?
+        } else {
+            pos_str_no_chrom
+        };
+    Ok(pos_not_range.parse::<u32>()?)
+}
+
 fn parse_data_line(line: String, i_cols: &[usize]) -> Result<PosLine, Error> {
     let parts = extract_data_from_line(&line, i_cols)?;
-    let pos = parts[0].parse::<u32>()?;
+    let pos = parse_pos(parts[0])?;
     Ok(PosLine { pos, line })
 }
 
