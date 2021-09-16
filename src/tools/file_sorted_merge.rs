@@ -38,12 +38,12 @@ impl OutputFile {
     fn new(output_file: &str, header_lines: &[String]) -> Result<OutputFile, Error> {
         let mut writer = BufWriter::new(File::create(output_file)?);
         for header_line in header_lines {
-            writeln!(writer, "{}\n", header_line)?;
+            writeln!(writer, "{}", header_line)?;
         }
         Ok(OutputFile { writer })
     }
     fn write(&mut self, line: &str) -> Result<(), Error> {
-        writeln!(self.writer, "{}\n", line)?;
+        writeln!(self.writer, "{}", line)?;
         Ok(())
     }
 }
@@ -68,7 +68,7 @@ pub(crate) fn merge(input_file_config1: &InputFileConfig, input_file_config2: &I
                 output_file.write(&record.line)?
             }
         }
-        if pos1 <= pos2 {
+        if pos2 <= pos1 {
             if let Some(record) = cache2.remove_record()? {
                 output_file.write(&record.line)?
             }
