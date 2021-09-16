@@ -22,12 +22,16 @@ cache_match_results = (file_for_chrom <- files_by_chrom) {
         output_file = replace_file_name(path = file_for_chrom, file_name = "vep_output.tsv"),
         warnings_file = ""
     );
+    tabix_pick = pick_vep_results(
+        input_file = tabix_outputs.output_file,
+        output_file = replace_file_name(path = file_for_chrom, file_name = "tabix_output_picked.tsv")
+    );
     vep_result_pick = pick_vep_results(
         input_file = vep_outputs.output_file,
         output_file = replace_file_name(path = file_for_chrom, file_name = "vep_output_picked.tsv")
     );
     merge_outputs = merge_sorted_files(
-        input_file1 = tabix_outputs.output_file,
+        input_file1 = tabix_pick.output_file,
         id1 = "",
         input_file2 = vep_result_pick.output_file,
         id2 = "",
