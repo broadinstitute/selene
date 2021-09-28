@@ -3,13 +3,13 @@ use crate::util::error::Error;
 
 mod util;
 mod config;
-mod variant;
 mod mion;
 mod tabix;
 mod cache;
 mod script;
 mod tools;
 mod tsv;
+mod genomics;
 
 extern crate nom;
 

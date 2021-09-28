@@ -2,7 +2,7 @@ use std::collections::{HashMap, BTreeSet};
 use crate::util::error::Error;
 use fs_err::File;
 use std::io::{BufReader, BufRead};
-use crate::variant::Variant;
+use crate::genomics::variant::Variant;
 
 #[derive(Eq, Ord, PartialOrd, PartialEq, Clone, Copy)]
 struct Interval {
@@ -153,7 +153,7 @@ fn overlaps_intervals(interval: &Interval, intervals: &[Interval]) -> bool {
 mod tests {
     use crate::util::error::Error;
     use crate::cache::regions::Regions;
-    use crate::variant::Variant;
+    use crate::genomics::variant::Variant;
     use std::io::{BufWriter, Write};
     use fs_err::File;
 

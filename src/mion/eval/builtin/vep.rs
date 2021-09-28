@@ -5,9 +5,11 @@ use crate::mion::eval::values::{Value, ObjectBuilder};
 use crate::util::error::Error;
 use crate::tools::vep::{run_vep, VepArgs, VepSetupArgs};
 use crate::mion::eval::builtin::utils::get_string_arg;
+use crate::genomics::assembly::Hg;
 
 const VEP_CMD_ARG: &str = "vep_cmd";
 const INPUT_FILE_ARG: &str = "input_file";
+const ASSEMBLY_ARG: &str = "assembly";
 const FASTA_FILE_ARG: &str = "fasta_file";
 const CACHE_DIR_ARG: &str = "cache_dir";
 const PLUGINS_DIR_ARG: &str = "plugins_dir";
@@ -23,6 +25,7 @@ impl Function for Vep {
     fn call(&self, args_map: HashMap<Identifier, Value>) -> Result<Value, Error> {
         let vep_cmd = get_string_arg(&args_map, VEP_CMD_ARG)?;
         let input_file = get_string_arg(&args_map, INPUT_FILE_ARG)?;
+        let assembly = Hg::parse(get_string_arg(&args_map, ASSEMBLY_ARG)?.as_str())?;
         let fasta_file = get_string_arg(&args_map, FASTA_FILE_ARG)?;
         let cache_dir = get_string_arg(&args_map, CACHE_DIR_ARG)?;
         let plugins_dir = get_string_arg(&args_map, PLUGINS_DIR_ARG)?;
@@ -36,7 +39,7 @@ impl Function for Vep {
         let vep_setup_args =
             VepSetupArgs::new(vep_cmd, fasta_file, cache_dir, plugins_dir, dbnsfp);
         let vep_args =
-            VepArgs::new(input_file, output_file, warnings_file, vep_setup_args);
+            VepArgs::new(input_file, assembly, output_file, warnings_file, vep_setup_args);
         run_vep(vep_args)?;
         Ok(object)
     }

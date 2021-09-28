@@ -2,13 +2,14 @@
 
 vepCmd=$1
 input=$2
-cpus=$3
-fasta=$4
-dirCache=$5
-dirPlugins=$6
-dbNSFP=$7
-output=$8
-warnings=$9
+assembly=$3
+cpus=$4
+fasta=$5
+dirCache=$6
+dirPlugins=$7
+dbNSFP=$8
+output=$9
+warnings=${10}
 
 echo "= = = Begin of vep invocation"
 cat <<COMMANDLINE
@@ -31,7 +32,7 @@ $vepCmd -i $input \
 --tsl \
 --biotype \
 --regulatory \
---assembly GRCh37 \
+--assembly $assembly \
 --flag_pick_allele \
 --pick_order tsl,biotype,appris,rank,ccds,canonical,length \
 --domains flags \
@@ -63,7 +64,7 @@ $vepCmd -i $input \
 --tsl \
 --biotype \
 --regulatory \
---assembly GRCh37 \
+--assembly $assembly \
 --flag_pick_allele \
 --pick_order tsl,biotype,appris,rank,ccds,canonical,length \
 --domains flags \

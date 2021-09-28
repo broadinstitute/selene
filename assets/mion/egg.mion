@@ -15,6 +15,7 @@ cache_match_results = (file_for_chrom <- files_by_chrom) {
     vep_outputs = vep(
         vep_cmd = "",
         input_file = tabix_outputs.misses_file,
+        assembly = "GRCh38",
         fasta_file = "",
         cache_dir = "",
         plugins_dir = "",

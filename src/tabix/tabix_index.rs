@@ -1,5 +1,5 @@
-use crate::variant;
-use crate::variant::Variant;
+use crate::genomics::variant;
+use crate::genomics::variant::Variant;
 
 const INTERVAL_SIZE: variant::Pos = 1 << 14;  //  16,384
 

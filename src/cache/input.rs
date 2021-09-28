@@ -1,8 +1,8 @@
 use std::io::{Read, BufReader, BufRead};
-use crate::variant::Variant;
+use crate::genomics::variant::Variant;
 use crate::util::error::Error;
 use fs_err::File;
-use crate::variant;
+use crate::genomics::variant;
 use crate::util::error;
 
 pub(crate) struct Input {
