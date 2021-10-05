@@ -1,7 +1,6 @@
 fn main() {
     match selene::run() {
         Ok(_) => {
-            println!("Done!");
             std::process::exit(0)
         }
         Err(error) => {
