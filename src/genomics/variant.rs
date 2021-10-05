@@ -33,11 +33,34 @@ impl Variant {
         format!("{}:{}_{}/{}", self.chrom, self.pos, self.ref_allele, self.alt_allele)
     }
     pub(crate) fn end(&self) -> u32 { self.pos + (self.ref_allele.len() as u32) }
+    pub(crate) fn parse(string: &str) -> Result<Variant, Error> {
+        let mut parts_iter = string.split(&['_', '/', ':'][..]);
+        let chrom =
+            String::from(
+                strip_chr(parts_iter.next().ok_or_else(|| { cannot_parse(string) })?)
+            );
+        let pos =
+            str::parse::<u32>(parts_iter.next().ok_or_else(|| { cannot_parse(string) })?)?;
+        let ref_allele =
+            String::from(parts_iter.next().ok_or_else(|| { cannot_parse(string) })?);
+        let alt_allele =
+            String::from(parts_iter.next().ok_or_else(|| { cannot_parse(string) })?);
+        Ok(Variant::new(chrom, pos, ref_allele, alt_allele))
+    }
+}
+
+fn cannot_parse(string: &str) -> Error {
+    Error::from(format!("Cannot parse '{}' as a canonical variant id.", string))
+}
+
+fn strip_chr(chrom: &str) -> &str {
+    chrom.strip_prefix("chr").unwrap_or(chrom)
 }
 
 pub(crate) fn parse_vcf_line(line: String) -> Result<(Variant, String), Error> {
     let mut fields = line.split('\t');
-    let chrom = String::from(get_vcf_field(&mut fields, "CHROM")?);
+    let chrom =
+        String::from(strip_chr(get_vcf_field(&mut fields, "CHROM")?));
     let pos = str::parse::<u32>(get_vcf_field(&mut fields, "POS")?)?;
     get_vcf_field(&mut fields, "ID")?;
     let ref_allele = String::from(get_vcf_field(&mut fields, "REF")?);
