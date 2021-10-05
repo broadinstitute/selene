@@ -4,6 +4,7 @@ use clap::{App, SubCommand, Arg};
 pub(crate) enum Config {
     Tabix(TabixConfig),
     Script(ScriptConfig),
+    VepTransformPipe
 }
 
 pub(crate) struct TabixConfig {
@@ -66,6 +67,7 @@ impl ScriptConfig {
 mod names {
     pub(crate) const TABIX: &str = "tabix";
     pub(crate) const SCRIPT: &str = "script";
+    pub(crate) const VEP_TRANSFORM_PIPE: &str = "vep-transform-pipe";
     pub(crate) const DATA_FILE: &str = "data-file";
     pub(crate) const INDEX_FILE: &str = "index-file";
     pub(crate) const INPUT_FILE: &str = "input-file";
@@ -143,6 +145,9 @@ pub(crate) fn get_config() -> Result<Config, Error> {
                     .arg(Arg::with_name(names::SCRIPT_FILE)
                         .value_name("script file")
                         .takes_value(true))
+            )
+            .subcommand(
+                SubCommand::with_name(names::VEP_TRANSFORM_PIPE)
             );
     let matches = app.get_matches();
     if let Some(tabix_matches) = matches.subcommand_matches(names::TABIX) {
@@ -179,8 +184,10 @@ pub(crate) fn get_config() -> Result<Config, Error> {
                 .ok_or_else(|| Error::from("Missing argument for script file."))?);
         let script_config = ScriptConfig::new(script_file);
         Ok(Config::Script(script_config))
+    } else if matches.subcommand_matches(names::VEP_TRANSFORM_PIPE).is_some() {
+        Ok(Config::VepTransformPipe)
     } else {
-        Err(Error::from(format!("Need to specify sub-command ({} or {}).",
-                                names::TABIX, names::SCRIPT)))
+        Err(Error::from(format!("Need to specify sub-command ({}, {} or {}).",
+                                names::TABIX, names::SCRIPT, names::VEP_TRANSFORM_PIPE)))
     }
 }

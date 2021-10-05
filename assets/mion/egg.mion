@@ -23,7 +23,7 @@ cache_match_results = (file_for_chrom <- files_by_chrom) {
         output_file = replace_file_name(path = file_for_chrom, file_name = "vep_output.tsv"),
         warnings_file = ""
     );
-    tabix_pick = pick_vep_results(
+    tabix_pick = transform_vep_results(
         input_file = tabix_outputs.output_file,
         output_file = replace_file_name(path = file_for_chrom, file_name = "tabix_output_picked.tsv")
     );
