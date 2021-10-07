@@ -4,7 +4,8 @@ use clap::{App, SubCommand, Arg};
 pub(crate) enum Config {
     Tabix(TabixConfig),
     Script(ScriptConfig),
-    VepTransformPipe
+    VepTransformPipe,
+    AdaptIdPipe(AdaptIdPipeConfig),
 }
 
 pub(crate) struct TabixConfig {
@@ -26,10 +27,14 @@ pub(crate) struct ScriptConfig {
     pub(crate) script_file: String,
 }
 
+pub(crate) struct AdaptIdPipeConfig {
+    pub(crate) id_col: String,
+}
+
 impl TabixConfig {
     pub(crate) fn new(input_config: TabixInputConfig, cache_misses_file_opt: Option<String>,
-           output_file_opt: Option<String>)
-           -> TabixConfig {
+                      output_file_opt: Option<String>)
+                      -> TabixConfig {
         TabixConfig {
             input_config,
             cache_misses_file_opt,
@@ -59,15 +64,18 @@ impl TabixInputConfig {
 }
 
 impl ScriptConfig {
-    fn new(script_file: String) -> ScriptConfig {
-        ScriptConfig { script_file }
-    }
+    fn new(script_file: String) -> ScriptConfig { ScriptConfig { script_file } }
+}
+
+impl AdaptIdPipeConfig {
+    fn new(id_col: String) -> AdaptIdPipeConfig { AdaptIdPipeConfig { id_col } }
 }
 
 mod names {
     pub(crate) const TABIX: &str = "tabix";
     pub(crate) const SCRIPT: &str = "script";
     pub(crate) const VEP_TRANSFORM_PIPE: &str = "vep-transform-pipe";
+    pub(crate) const ADAPT_ID_PIPE: &str = "adapt-id-pipe";
     pub(crate) const DATA_FILE: &str = "data-file";
     pub(crate) const INDEX_FILE: &str = "index-file";
     pub(crate) const INPUT_FILE: &str = "input-file";
@@ -76,6 +84,7 @@ mod names {
     pub(crate) const OUTPUT_FILE: &str = "output-file";
     pub(crate) const COL_REF: &str = "col-ref";
     pub(crate) const COL_ALT: &str = "col-alt";
+    pub(crate) const COL_ID: &str = "col-id";
     pub(crate) const SCRIPT_FILE: &str = "script-file";
 }
 
@@ -148,6 +157,12 @@ pub(crate) fn get_config() -> Result<Config, Error> {
             )
             .subcommand(
                 SubCommand::with_name(names::VEP_TRANSFORM_PIPE)
+            )
+            .subcommand(
+                SubCommand::with_name(names::VEP_TRANSFORM_PIPE)
+                    .arg(Arg::with_name(names::COL_ID)
+                        .value_name("id column")
+                        .takes_value(true))
             );
     let matches = app.get_matches();
     if let Some(tabix_matches) = matches.subcommand_matches(names::TABIX) {
@@ -186,8 +201,17 @@ pub(crate) fn get_config() -> Result<Config, Error> {
         Ok(Config::Script(script_config))
     } else if matches.subcommand_matches(names::VEP_TRANSFORM_PIPE).is_some() {
         Ok(Config::VepTransformPipe)
+    }
+    else if let Some(adapt_id_matches) =
+    matches.subcommand_matches(names::ADAPT_ID_PIPE) {
+        let id_col =
+            String::from(adapt_id_matches.value_of(names::COL_ID)
+                .ok_or_else(|| Error::from("Missing argument for ic columns."))?);
+        let adapt_id_pipe_config = AdaptIdPipeConfig::new(id_col);
+        Ok(Config::AdaptIdPipe(adapt_id_pipe_config))
     } else {
-        Err(Error::from(format!("Need to specify sub-command ({}, {} or {}).",
-                                names::TABIX, names::SCRIPT, names::VEP_TRANSFORM_PIPE)))
+        Err(Error::from(format!("Need to specify sub-command ({}, {}, {} or {}).",
+                                names::TABIX, names::SCRIPT, names::VEP_TRANSFORM_PIPE,
+                                names::ADAPT_ID_PIPE)))
     }
 }
