@@ -159,8 +159,10 @@ pub(crate) fn get_config() -> Result<Config, Error> {
                 SubCommand::with_name(names::VEP_TRANSFORM_PIPE)
             )
             .subcommand(
-                SubCommand::with_name(names::VEP_TRANSFORM_PIPE)
+                SubCommand::with_name(names::ADAPT_ID_PIPE)
                     .arg(Arg::with_name(names::COL_ID)
+                        .short("i")
+                        .long("col-id")
                         .value_name("id column")
                         .takes_value(true))
             );
@@ -206,7 +208,7 @@ pub(crate) fn get_config() -> Result<Config, Error> {
     matches.subcommand_matches(names::ADAPT_ID_PIPE) {
         let id_col =
             String::from(adapt_id_matches.value_of(names::COL_ID)
-                .ok_or_else(|| Error::from("Missing argument for ic columns."))?);
+                .ok_or_else(|| Error::from("Missing argument for id column."))?);
         let adapt_id_pipe_config = AdaptIdPipeConfig::new(id_col);
         Ok(Config::AdaptIdPipe(adapt_id_pipe_config))
     } else {
