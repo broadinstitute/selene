@@ -53,6 +53,8 @@ pub(crate) fn adapt_id<I, O>(reader: BufReader<I>, mut writer: BufWriter<O>, id_
                     pos += 1;
                 }
             }
+            let line_new = std::str::from_utf8(bytes)?;
+            writeln!(writer, "{}", line_new)?;
         }
     }
     Ok(())

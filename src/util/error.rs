@@ -7,6 +7,7 @@ use bgzip::BGZFError;
 use nom::error::VerboseError;
 use nom::Err;
 use std::any::Any;
+use std::str::Utf8Error;
 
 pub struct SeleneError {
     message: String,
@@ -20,6 +21,7 @@ pub enum Error {
     ParseInt(ParseIntError),
     Bgzf(BGZFError),
     Nom(String),
+    Utf8str(Utf8Error),
 }
 
 pub(crate) trait Reporter {
@@ -53,6 +55,7 @@ impl Error {
             Error::ParseInt(_) => { 5 }
             Error::Bgzf(_) => { 6 }
             Error::Nom(_) => { 7 }
+            Error::Utf8str(_) => { 8 }
         }
     }
 }
@@ -103,6 +106,12 @@ impl From<nom::Err<VerboseError<&str>>> for Error {
     }
 }
 
+impl From<std::str::Utf8Error> for Error {
+    fn from(utf8_error: Utf8Error) -> Self {
+        Error::Utf8str(utf8_error)
+    }
+}
+
 impl Display for SeleneError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         std::fmt::Display::fmt(&self.message, f)
@@ -121,6 +130,7 @@ impl Display for Error {
             }
             Error::Bgzf(bgzf_error) => { fmt::Display::fmt(&bgzf_error, f) }
             Error::Nom(nom_error) => { fmt::Display::fmt(&nom_error, f) }
+            Error::Utf8str(utf8_error) => { fmt::Display::fmt(utf8_error, f) }
         }
     }
 }
