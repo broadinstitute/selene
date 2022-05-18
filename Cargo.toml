@@ -1,9 +1,9 @@
 [package]
 name = "selene"
 description = "BGZ/TBI reader."
-version = "2.2.8"
+version = "2.3.0"
 authors = ["Oliver Ruebenacker <oliverr@broadinstitute.org>"]
-edition = "2018"
+edition = "2021"
 readme = "README.md"
 repository = "https://github.com/broadinstitute/selene"
 license = "BSD-3-Clause"
@@ -21,7 +21,7 @@ linux_installation = []
 
 [package.metadata.deb]
 maintainer = "Oliver Ruebenacker <oliverr@broadinstitute.org>"
-copyright = "2021, Broad Institute of"
+copyright = "2022, Broad Institute of"
 license-file = ["LICENSE", "0"]
 extended-description = """\
 Genomic analysis workflow toolkit"""
